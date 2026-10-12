@@ -2102,6 +2102,7 @@ def get_keepalive_status(_=Depends(auth)):
 
 # ------------------------- 仓库实时更新检测、通知与一键在线升级 -------------------------
 REPO_URL = "https://github.com/czg86389-hub/muse2api"
+UPDATER_ENABLED = os.environ.get("MUSE2API_UPDATER_ENABLED", "0").strip().lower() in ("1", "true", "yes", "on")
 TRACKED_REPO_PATHS = [
     "app.py", "engine.py", "store.py", "cdp.py", "config.py",
     "admin.html", "README.md", "version.json", "requirements.txt",
@@ -2363,6 +2364,8 @@ def _upgrade_from_github_sync() -> dict:
 @app.get("/admin/repo/status")
 async def admin_check_update(force: bool = False):
     """供所有已部署节点实时检测 GitHub 官方仓库是否有新版本更新。"""
+    if not UPDATER_ENABLED:
+        return {"enabled": False, "message": "Online updates are disabled. Update manually from your chosen repository."}
     return await asyncio.to_thread(_check_update_sync, force)
 
 
@@ -2370,6 +2373,8 @@ async def admin_check_update(force: bool = False):
 @app.post("/admin/repo/pull")
 async def admin_upgrade_now(payload: dict = Body(default={}), _=Depends(auth)):
     """一键从 GitHub 官方仓库拉取最新更新并自动平滑重启服务。"""
+    if not UPDATER_ENABLED:
+        raise HTTPException(404, "Online updates are disabled. Update manually from your chosen repository.")
     res = await asyncio.to_thread(_upgrade_from_github_sync)
     restart = payload.get("restart", True) if isinstance(payload, dict) else True
     if restart:
@@ -2387,6 +2392,8 @@ async def admin_upgrade_now(payload: dict = Body(default={}), _=Depends(auth)):
 @app.post("/admin/repo/push")
 async def admin_repo_push(payload: dict = Body(default={}), _=Depends(auth)):
     """维护者专用：将当前节点核心代码推送到 GitHub 仓库（自动过滤 .env 与 data 目录）。"""
+    if os.environ.get("MUSE2API_ALLOW_WEB_PUSH", "0").strip().lower() not in ("1", "true", "yes", "on"):
+        raise HTTPException(404, "Web-based repository publishing is disabled.")
     msg = (payload.get("message") or "").strip() or f"chore: sync update ({time.strftime('%Y-%m-%d %H:%M:%S')})"
     new_token = (payload.get("github_token") or "").strip()
     if new_token:

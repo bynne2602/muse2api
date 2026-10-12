@@ -60,3 +60,7 @@ Thumbs.db
 *.zip
 *.tar.gz
 *.tar
+
+# Local runtime profiles and logs
+profiles/
+logs/
