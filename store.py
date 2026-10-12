@@ -145,14 +145,26 @@ class Store:
             return len(self.accounts) != n
 
     def pick_account(self, preferred_id: str | None = None, rotate: bool = True,
-                     force_rotate: bool = False, exclude_id: str | None = None) -> dict | None:
-        """选择可用账号：优先复用当前已预热的健康账号（减少切号重连耗时），每满 15 次或遇错自动轮转。"""
+                     force_rotate: bool = False, exclude_id: str | None = None,
+                     exclude_ids: set[str] | list[str] | None = None) -> dict | None:
+        """选择可用账号：优先复用当前已预热的健康账号（减少切号重连耗时），每满 15 次或遇错自动轮转。
+        exclude_ids: 需要排除的账号 ID 集合（例如正在被其他并发线程占用的账号）。"""
         with _LOCK:
             live = [a for a in self.accounts if a.get("enabled", True) and a.get("cookies")]
             if not live:
                 return None
-            if exclude_id and len(live) > 1:
-                live = [a for a in live if a["id"] != exclude_id] or live
+            blocked = set(exclude_ids or [])
+            if exclude_id:
+                blocked.add(exclude_id)
+            if blocked:
+                available = [a for a in live if a["id"] not in blocked]
+                if available:
+                    live = available
+                elif exclude_ids is not None:
+                    # 并发模式下要求避开所有繁忙账号，但当前无剩余空闲账号
+                    return None
+                elif len(live) > 1:
+                    live = [a for a in live if a["id"] != exclude_id] or live
             if preferred_id and not force_rotate:
                 for a in live:
                     if a["id"] == preferred_id and a.get("ok") is not False:

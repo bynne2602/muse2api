@@ -17,6 +17,7 @@ import os
 import re
 import shutil
 import subprocess
+import threading
 import time
 import uuid
 
@@ -44,19 +45,53 @@ class MuseEngine:
         self.cfg = cfg
         self.proc: subprocess.Popen | None = None
         self.browser: CDP | None = None
-        self.page: CDP | None = None
-        self.current_acc_id: str | None = None
+        self._local = threading.local()
+        self._start_lock = threading.Lock()
+        self._active_contexts: set[str] = set()
+        self._contexts_lock = threading.Lock()
         self._last_http_renew: dict[str, float] = {}
         self._log = None
         os.makedirs(cfg.profile_dir, exist_ok=True)
+
+    def _ensure_local(self):
+        local = getattr(self, "_local", None)
+        if local is None:
+            local = threading.local()
+            self._local = local
+        return local
+
+    @property
+    def page(self) -> CDP | None:
+        return getattr(self._ensure_local(), "page", None)
+
+    @page.setter
+    def page(self, val: CDP | None):
+        self._ensure_local().page = val
+
+    @property
+    def current_acc_id(self) -> str | None:
+        return getattr(self._ensure_local(), "current_acc_id", None)
+
+    @current_acc_id.setter
+    def current_acc_id(self, val: str | None):
+        self._ensure_local().current_acc_id = val
+
+    @property
+    def current_context_id(self) -> str | None:
+        return getattr(self._ensure_local(), "current_context_id", None)
+
+    @current_context_id.setter
+    def current_context_id(self, val: str | None):
+        self._ensure_local().current_context_id = val
 
     # ---------------- 浏览器生命周期 ----------------
     def _debug_url(self):
         return f"http://127.0.0.1:{self.cfg.cdp_port}/json/version"
 
     def start(self):
-        if self.proc and self.proc.poll() is None and self.browser:
-            return
+        with self._start_lock:
+            if self.proc and self.proc.poll() is None and self.browser:
+                return
         env = dict(os.environ)
         env.setdefault("HOME", self.cfg.home_dir)
         env["PATH"] = (self.cfg.extra_path + os.pathsep + env.get("PATH", "")) if self.cfg.extra_path else env.get("PATH", "")
@@ -108,31 +143,79 @@ class MuseEngine:
         raise MuseGenerationError(f"Chromium 启动失败: {last}")
 
     def stop(self):
-        for c in (self.page, self.browser):
-            if c:
-                c.close()
-        self.page = self.browser = None
-        if self.proc and self.proc.poll() is None:
-            self.proc.terminate()
-            try:
-                self.proc.wait(timeout=10)
-            except Exception:  # noqa: BLE001
-                self.proc.kill()
-        self.proc = None
+        with self._start_lock:
+            self._close_page()
+            if self.browser:
+                with self._contexts_lock:
+                    for ctx_id in list(self._active_contexts):
+                        try:
+                            self.browser.send("Target.disposeBrowserContext", {"browserContextId": ctx_id})
+                        except Exception:
+                            pass
+                    self._active_contexts.clear()
+                try:
+                    self.browser.close()
+                except Exception:
+                    pass
+                self.browser = None
+            if self.proc and self.proc.poll() is None:
+                self.proc.terminate()
+                try:
+                    self.proc.wait(timeout=10)
+                except Exception:  # noqa: BLE001
+                    self.proc.kill()
+            self.proc = None
 
     # ---------------- 页面 ----------------
-    def _open_page(self):
-        import requests
-        try:
-            pages = requests.get(f"http://127.0.0.1:{self.cfg.cdp_port}/json/list", timeout=3).json()
-            for p in pages:
-                if p.get("type") == "page":
-                    pid = p.get("id")
-                    if pid:
-                        requests.get(f"http://127.0.0.1:{self.cfg.cdp_port}/json/close/{pid}", timeout=2)
-        except Exception:
-            pass
+    def _close_page(self):
+        """关闭当前线程专属的页面并销毁隔离的 BrowserContext，彻底释放内存与 Session。"""
+        p = self.page
+        ctx_id = self.current_context_id
+        if p:
+            try:
+                p.close()
+            except Exception:
+                pass
+            self.page = None
+        if ctx_id and self.browser:
+            try:
+                self.browser.send("Target.disposeBrowserContext", {"browserContextId": ctx_id})
+            except Exception:
+                pass
+            with self._contexts_lock:
+                self._active_contexts.discard(ctx_id)
+            self.current_context_id = None
+        self.current_acc_id = None
 
+    def _open_page(self):
+        """为当前工作线程创建独立的页面。
+        若浏览器主连接存在，则创建独立的 Incognito BrowserContext，实现多账号 Cookies 与会话 100% 隔离。"""
+        if self.browser:
+            try:
+                res = self.browser.send("Target.createBrowserContext")
+                ctx_id = res.get("result", {}).get("browserContextId")
+                if ctx_id:
+                    self.current_context_id = ctx_id
+                    with self._contexts_lock:
+                        self._active_contexts.add(ctx_id)
+                    t_res = self.browser.send("Target.createTarget", {
+                        "url": "about:blank",
+                        "browserContextId": ctx_id
+                    })
+                    target_id = t_res.get("result", {}).get("targetId")
+                    if target_id:
+                        ws_url = f"ws://127.0.0.1:{self.cfg.cdp_port}/devtools/page/{target_id}"
+                        page = CDP(ws_url, timeout=180)
+                        page.send("Network.enable")
+                        page.send("Page.enable")
+                        page.send("Runtime.enable")
+                        page.send("Browser.setDownloadBehavior",
+                                  {"behavior": "allow", "downloadPath": self.cfg.download_dir})
+                        return page
+            except Exception as exc:
+                log.warning("Target.createBrowserContext 创建隔离上下文失败，回退到普通标签页: %s", exc)
+
+        import requests
         tgt = requests.put(
             f"http://127.0.0.1:{self.cfg.cdp_port}/json/new?about:blank",
             timeout=10).json()
@@ -334,12 +417,7 @@ class MuseEngine:
                     return self.page
             except Exception:
                 pass
-        if self.page:
-            try:
-                self.page.close()
-            except Exception:
-                pass
-            self.page = None
+        self._close_page()
         # 仅当距离上次 HTTP 续签超过 10 分钟时才在主链路调用 /api/session，避免每次切号重复阻塞
         last_map = getattr(self, "_last_http_renew", None)
         if last_map is None:
@@ -386,16 +464,18 @@ class MuseEngine:
             body = (page.js("document.body.innerText.slice(0,1200)") or "").lower()
         except Exception:  # noqa: BLE001
             body = ""
-        page.close()
+        self._close_page()
         if re.search(r"log in|sign in|create an account|登录|use another account", body):
             raise MuseAuthError("会话已被 muse.ai 登出（可能被其它登录挤掉或触发风控），"
                                 "请用浏览器扩展重新导入 cookie")
         raise MuseGenerationError("muse.ai 页面加载超时（未出现聊天输入框），请检查服务器网络后重试；未确认会话失效")
 
+    def close_current_page(self):
+        """显式释放当前线程所持有的页面和隔离上下文。"""
+        self._close_page()
+
     def refresh(self, cookies: dict, expires: dict | None = None):
-        if self.page:
-            self.page.close()
-            self.page = None
+        self._close_page()
         return self.ensure_page(cookies, expires)
 
     # ---------------- 额度查询（Settings 面板） ----------------
@@ -668,54 +748,48 @@ class MuseEngine:
         t_start = time.time()
         stable_src, stable_n = "", 0
         last_txt, txt_stable = "", 0
-        fallback_since = 0.0
         while time.time() < deadline:
             if stop_event is not None and stop_event.is_set():
                 raise MuseGenerationError("客户端已断开连接，终止生成任务")
             time.sleep(0.6)
             self._scroll_bottom()
             atts = self.attachments()
-            # 按期望类型挑选候选：视频请求优先挑带 video 的附件；
-            # 若无匹配（muse 有时先渲染封面静帧），先记下图片兜底，
-            # 再给视频节点一段宽限期，避免把封面 img 误当成品返回。
-            att = None
-            fallback_att = None
-            if atts:
-                def _score(a):
-                    tid = (a.get("tid") or "").lower()
-                    has_video = bool(a.get("hasVideo"))
-                    if expect == "video":
-                        return 2 if (has_video or "video" in tid) else 1
-                    return 2 if (("image" in tid) or (not has_video)) else 1
-                best = max(atts, key=_score)
-                if _score(best) >= 2:
-                    att = best
+            # 严格按期望类型挑选附件，绝不接受跨模态兜底（如将视频请求降级为图片封面）
+            matching_atts = []
+            for a in atts:
+                tid = (a.get("tid") or "").lower()
+                has_video = bool(a.get("hasVideo"))
+                src = a.get("src") or ""
+                v_src = a.get("vSrc") or ""
+                if expect == "video":
+                    # tid 含 "video" 不足以命中：muse 会先把 data-testid 标成
+                    # ...-presentation-video，此时 <video> 可能尚未挂上，_ATT_JS 的
+                    # primary = v || img 会退回封面 img，src/w/h 全是静帧。
+                    # 只认真正的视频源（vSrc / hasVideo / 视频扩展名）。
+                    is_match = (
+                        has_video
+                        or bool(v_src)
+                        or src.endswith((".mp4", ".webm", ".mov"))
+                    )
                 else:
-                    fallback_att = atts[-1]
-            if att is None and fallback_att is not None and expect == "video":
-                # 图片兜底：只有宽限期内仍未出现视频节点才接受
-                if fallback_since == 0.0:
-                    fallback_since = time.time()
-                if time.time() - fallback_since >= 15.0:
-                    att = fallback_att
+                    is_match = ("image" in tid) or (not has_video and not src.endswith((".mp4", ".webm", ".mov")))
+                if is_match:
+                    matching_atts.append(a)
+
+            att = matching_atts[-1] if matching_atts else None
             if att:
                 src = att.get("src") or ""
                 v_src = att.get("vSrc") or ""
-                tid = att.get("tid") or ""
                 w = att.get("w", 0) or 0
                 h = att.get("h", 0) or 0
-                has_video = att.get("hasVideo", False)
-                is_fallback = att is fallback_att and att is not None and not (
-                    has_video or "video" in (tid or "").lower()
-                ) and expect == "video"
-                if is_fallback:
-                    want = True  # 宽限期已过，接受图片兜底结果
-                elif expect == "video":
-                    want = has_video or ("video" in tid) or ("video" in src) or ("video" in v_src) or src.endswith((".mp4", ".webm", ".mov"))
+                # 视频任务禁止用封面 src 冒充成品；无 vSrc 时仅接受显式视频后缀的 src
+                if expect == "video":
+                    check_src = v_src if v_src else (
+                        src if src.endswith((".mp4", ".webm", ".mov")) else ""
+                    )
                 else:
-                    want = ("image" in tid) or (not has_video)
-                check_src = v_src if (expect == "video" and v_src) else src
-                if check_src and check_src not in baseline_sources and want:
+                    check_src = src
+                if check_src and check_src not in baseline_sources:
                     if w > 0 and h > 0:
                         return att
                     if check_src == stable_src:
@@ -1166,8 +1240,11 @@ class MuseEngine:
             dst = os.path.join(self.cfg.media_dir, name)
             with open(dst, "wb") as f:
                 f.write(data)
+            kind = "video" if ext in (".mp4", ".webm", ".mov") else "image"
+            if expect == "video" and kind != "video":
+                raise MuseGenerationError(f"期望生成视频，但提取成品类型为图片 ({ext})，拒绝以图片冒充视频交付")
             return {"path": dst, "filename": name, "size": len(data), "ext": ext, "mime": mime,
-                    "kind": "video" if ext in (".mp4", ".webm", ".mov") else "image",
+                    "kind": kind,
                     "via": "blob", "attachment": att.get("tid"),
                     "w": att.get("w"), "h": att.get("h")}
 
@@ -1178,8 +1255,11 @@ class MuseEngine:
         name = f"{uuid.uuid4().hex}{ext}"
         dst = os.path.join(self.cfg.media_dir, name)
         shutil.move(path, dst)
+        kind = "video" if ext in (".mp4", ".webm", ".mov") else "image"
+        if expect == "video" and kind != "video":
+            raise MuseGenerationError(f"期望生成视频，但下载成品类型为图片 ({ext})，拒绝以图片冒充视频交付")
         return {"path": dst, "filename": name, "size": os.path.getsize(dst), "ext": ext, "mime": "",
-                "kind": "video" if ext in (".mp4", ".webm", ".mov") else "image",
+                "kind": kind,
                 "via": "download", "attachment": att.get("tid"),
                 "w": att.get("w"), "h": att.get("h")}
 

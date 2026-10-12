@@ -77,7 +77,101 @@ app.add_middleware(CORSMiddleware,
 
 store = Store(CFG)
 engine = MuseEngine(CFG)
-GEN_LOCK = threading.Lock()
+
+
+class ConcurrencyLock:
+    """多账号并发调度锁。
+    由 CFG.max_concurrency 限制最大并发槽位；
+    同时提供与标准 Lock 兼容的 acquire / release / locked 接口，
+    确保向下兼容历史单锁断言与管理端操作。"""
+    def __init__(self, limit: int = 2):
+        self.limit = max(1, limit)
+        self._sem = threading.Semaphore(self.limit)
+        self._count_lock = threading.Lock()
+        self._active_count = 0
+
+    def acquire(self, blocking: bool = True, timeout: float | None = -1) -> bool:
+        if timeout is None:
+            timeout = -1
+        if timeout < 0:
+            ok = self._sem.acquire(blocking=blocking)
+        else:
+            ok = self._sem.acquire(blocking=blocking, timeout=timeout)
+        if ok:
+            with self._count_lock:
+                self._active_count += 1
+        return ok
+
+    def release(self):
+        with self._count_lock:
+            if self._active_count > 0:
+                self._active_count -= 1
+        self._sem.release()
+
+    def locked(self) -> bool:
+        with self._count_lock:
+            return self._active_count > 0
+
+    def __enter__(self):
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release()
+
+
+class AccountPoolManager:
+    """账号并发冲突管理器：确保同一账号不会同时被两个并发任务操作，多账号则并行执行。"""
+    def __init__(self, store_instance):
+        self.store = store_instance
+        self.busy_accounts: set[str] = set()
+        self.cond = threading.Condition()
+
+    def acquire(self, account_id: str | None = None, preferred_id: str | None = None,
+                rotate: bool = True, force_rotate: bool = False,
+                timeout: float = 60.0) -> dict:
+        deadline = time.monotonic() + timeout
+        with self.cond:
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise MuseGenerationError("等待空闲账号超时，当前所有账号均处于繁忙中")
+
+                if account_id:
+                    acc = self.store.get_account(account_id)
+                    if not acc or not acc.get("enabled", True):
+                        raise MuseAuthError(f"指定账号 {account_id} 不存在或已禁用")
+                    if account_id not in self.busy_accounts:
+                        self.busy_accounts.add(account_id)
+                        return acc
+                else:
+                    pref = preferred_id if preferred_id not in self.busy_accounts else None
+                    acc = self.store.pick_account(
+                        preferred_id=pref,
+                        rotate=rotate,
+                        force_rotate=force_rotate,
+                        exclude_ids=self.busy_accounts
+                    )
+                    if acc:
+                        self.busy_accounts.add(acc["id"])
+                        return acc
+
+                live = [a for a in self.store.accounts if a.get("enabled", True) and a.get("cookies")]
+                if not live:
+                    raise MuseAuthError("没有可用账号，请先在管理页面导入 cookie")
+
+                self.cond.wait(timeout=min(remaining, 0.5))
+
+    def release(self, account_id: str | None):
+        if not account_id:
+            return
+        with self.cond:
+            self.busy_accounts.discard(account_id)
+            self.cond.notify_all()
+
+
+GEN_LOCK = ConcurrencyLock(limit=CFG.max_concurrency)
+ACCOUNT_POOL = AccountPoolManager(store)
 IMAGE_TASK_LOCK = threading.Lock()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -226,18 +320,32 @@ def safe_chat_stream(cookies: dict, prompt: str, expires: dict | None,
         cur_cookies = cookies
         cur_exp = expires
         last_exc = None
+        leased_id = None
         try:
             for attempt in range(2):
                 if stop_event.is_set():
                     return
                 if attempt > 0:
-                    alt = store.pick_account(rotate=True, force_rotate=True, exclude_id=cur_id)
+                    if leased_id:
+                        ACCOUNT_POOL.release(leased_id)
+                        leased_id = None
+                    try:
+                        alt = ACCOUNT_POOL.acquire(rotate=True, force_rotate=True, timeout=timeout)
+                    except Exception:
+                        break
                     if not alt or alt["id"] == cur_id:
+                        if alt:
+                            leased_id = alt["id"]
                         break
                     cur_id = alt["id"]
+                    leased_id = cur_id
                     cur_cookies = alt["cookies"]
                     cur_exp = alt.get("cookies_exp")
                     log.info("【对话自动切号】切换到备用账号 %s (%s) 重试...", alt.get("label"), cur_id)
+                elif cur_id:
+                    ACCOUNT_POOL.acquire(account_id=cur_id, timeout=timeout)
+                    leased_id = cur_id
+
                 yielded = False
                 try:
                     if cur_id:
@@ -265,6 +373,7 @@ def safe_chat_stream(cookies: dict, prompt: str, expires: dict | None,
                     last_exc = exc
                     if cur_id:
                         store.mark(cur_id, False, str(exc))
+                    engine.close_current_page()
                     if yielded:
                         break
                 except Exception as exc:
@@ -278,6 +387,9 @@ def safe_chat_stream(cookies: dict, prompt: str, expires: dict | None,
             if last_exc is not None:
                 q.put(("error", last_exc))
         finally:
+            if leased_id:
+                ACCOUNT_POOL.release(leased_id)
+            engine.close_current_page()
             q.put(("done", None))
 
     threading.Thread(target=worker, daemon=True).start()
@@ -738,12 +850,18 @@ def _pos(v) -> bool:
 
 def _run_generation(prompt: str, kind: str, timeout: int,
                     account_id: str | None = None, on_progress=None,
-                    reference_image: str | None = None) -> tuple[dict, str | None]:
+                    reference_image: str | None = None,
+                    on_acquired=None) -> tuple[dict, str | None]:
     # Browser ownership covers account selection, retry and cleanup, not just generate().
     deadline = time.monotonic() + max(1, timeout)
     if not GEN_LOCK.acquire(timeout=max(1, timeout)):
         raise MuseGenerationError("等待浏览器队列超时，请稍后重试")
     try:
+        if on_acquired:
+            try:
+                on_acquired()
+            except Exception:
+                pass
         return _run_generation_locked(prompt, kind, timeout, account_id,
                                       on_progress, reference_image, deadline=deadline)
     finally:
@@ -753,57 +871,67 @@ def _run_generation(prompt: str, kind: str, timeout: int,
 def _run_generation_locked(prompt: str, kind: str, timeout: int,
                     account_id: str | None = None, on_progress=None,
                     reference_image: str | None = None, deadline=None) -> tuple[dict, str | None]:
-    acc = store.get_account(account_id) if account_id else None
-    if acc and not acc.get("enabled", True):
-        acc = None
-    if not acc:
-        acc = store.pick_account(rotate=True, preferred_id=getattr(engine, "current_acc_id", None))
-    if not acc:
-        raise MuseAuthError("没有可用账号，请先在管理页面导入 cookie")
-
-    last_exc = None
+    remaining_wait = int(deadline - time.monotonic()) if deadline is not None else timeout
+    acc = ACCOUNT_POOL.acquire(account_id=account_id,
+                               preferred_id=getattr(engine, "current_acc_id", None),
+                               timeout=max(1, remaining_wait))
     cur_acc = acc
-    for attempt in range(2):
-        if deadline is not None and time.monotonic() >= deadline:
-            raise MuseGenerationError("任务总等待时限已到，停止重试")
-        if attempt > 0:
-            if last_exc and "未产出媒体附件，仅返回了文本回复" in str(last_exc):
-                break
-            alt = store.pick_account(rotate=True, force_rotate=True, exclude_id=cur_acc["id"])
-            if not alt or alt["id"] == cur_acc["id"]:
-                break
-            cur_acc = alt
-            log.info("【生图/视频自动切号】切换到备用账号 %s (%s) 重试...", cur_acc.get("label"), cur_acc["id"])
-        try:
-            refreshed = _renew_and_persist(cur_acc["id"], wake_vm=True, force=(attempt > 0))
-            if refreshed:
-                cur_acc = refreshed
-            engine.start()
-            remaining = int(deadline - time.monotonic()) if deadline is not None else timeout
-            if remaining <= 0:
+    last_exc = None
+    try:
+        for attempt in range(2):
+            if deadline is not None and time.monotonic() >= deadline:
                 raise MuseGenerationError("任务总等待时限已到，停止重试")
-            res = engine.generate(cur_acc["cookies"], prompt, expect=kind,
-                                  timeout=remaining, expires=cur_acc.get("cookies_exp"),
-                                  account_id=cur_acc["id"], on_progress=on_progress,
-                                  reference_image=reference_image)
-            store.mark(cur_acc["id"], True, "")
-            _sync_cookies(cur_acc["id"])
-            return res, cur_acc["id"]
-        except MuseAuthError as exc:
-            last_exc = exc
-            store.mark(cur_acc["id"], False, str(exc))
-            engine.stop()
-        except MuseGenerationError as exc:
-            last_exc = exc
-            store.mark(cur_acc["id"], True, f"任务异常: {str(exc)[:60]}")
+            if attempt > 0:
+                if last_exc and "未产出媒体附件，仅返回了文本回复" in str(last_exc):
+                    break
+                old_id = cur_acc["id"] if cur_acc else None
+                if old_id:
+                    ACCOUNT_POOL.release(old_id)
+                cur_acc = None
+                rem = int(deadline - time.monotonic()) if deadline is not None else timeout
+                if rem <= 0:
+                    break
+                alt = ACCOUNT_POOL.acquire(rotate=True, force_rotate=True, timeout=rem)
+                if not alt or (old_id and alt["id"] == old_id):
+                    if alt:
+                        cur_acc = alt
+                    break
+                cur_acc = alt
+                log.info("【生图/视频自动切号】切换到备用账号 %s (%s) 重试...", cur_acc.get("label"), cur_acc["id"])
             try:
-                engine.reset_thread()
-            except Exception:
-                pass
-        except Exception as exc:  # noqa: BLE001
-            engine.stop()
-            last_exc = MuseGenerationError(f"生成失败: {exc}")
-    raise last_exc
+                refreshed = _renew_and_persist(cur_acc["id"], wake_vm=True, force=(attempt > 0))
+                if refreshed:
+                    cur_acc = refreshed
+                engine.start()
+                remaining = int(deadline - time.monotonic()) if deadline is not None else timeout
+                if remaining <= 0:
+                    raise MuseGenerationError("任务总等待时限已到，停止重试")
+                res = engine.generate(cur_acc["cookies"], prompt, expect=kind,
+                                      timeout=remaining, expires=cur_acc.get("cookies_exp"),
+                                      account_id=cur_acc["id"], on_progress=on_progress,
+                                      reference_image=reference_image)
+                store.mark(cur_acc["id"], True, "")
+                _sync_cookies(cur_acc["id"])
+                return res, cur_acc["id"]
+            except MuseAuthError as exc:
+                last_exc = exc
+                store.mark(cur_acc["id"], False, str(exc))
+                engine.close_current_page()
+            except MuseGenerationError as exc:
+                last_exc = exc
+                store.mark(cur_acc["id"], True, f"任务异常: {str(exc)[:60]}")
+                try:
+                    engine.reset_thread()
+                except Exception:
+                    pass
+            except Exception as exc:  # noqa: BLE001
+                engine.close_current_page()
+                last_exc = MuseGenerationError(f"生成失败: {exc}")
+        raise last_exc
+    finally:
+        if cur_acc:
+            ACCOUNT_POOL.release(cur_acc.get("id"))
+        engine.close_current_page()
 
 
 # ------------------------- 基础接口 -------------------------
@@ -869,22 +997,25 @@ def _queue_image(req: ImageRequest, prompt: str, reference_image: str | None,
                           image_request_key=key_hash, image_request_hash=request_hash)
 
     def worker():
-        t0 = time.time()
-        store.update_task(tid, status="processing", progress=5)
+        timing = {"t0": time.time()}
+        def _on_acquired():
+            timing["t0"] = time.time()
+            store.update_task(tid, status="processing", progress=5)
         try:
             res, acc_id = _run_generation(
                 prompt, "image", req.timeout or CFG.image_timeout,
                 reference_image=reference_image,
-                on_progress=lambda p: store.update_task(tid, progress=p))
+                on_progress=lambda p: store.update_task(tid, progress=p),
+                on_acquired=_on_acquired)
             # Store only media metadata, not large base64 payloads or reference credentials.
             store.update_task(tid, status="completed", progress=100, account=acc_id,
-                              elapsed=round(time.time() - t0, 1),
+                              elapsed=round(time.time() - timing["t0"], 1),
                               url=media_url(res["filename"]),
                               result={**{k: res[k] for k in ("filename", "size", "kind")},
                                       "url": media_url(res["filename"])})
         except Exception as exc:  # noqa: BLE001
             store.update_task(tid, status="failed", error=str(exc),
-                              elapsed=round(time.time() - t0, 1))
+                              elapsed=round(time.time() - timing["t0"], 1))
 
     threading.Thread(target=worker, daemon=True).start()
     return JSONResponse(status_code=202, content={
@@ -1043,15 +1174,18 @@ async def create_video(req: VideoRequest, _=Depends(auth)):
     store.update_task(task["id"], progress=10)
 
     def worker():
-        store.update_task(task["id"], status="processing", progress=15)
-        t0 = time.time()
+        timing = {"t0": time.time()}
+        def _on_acquired():
+            timing["t0"] = time.time()
+            store.update_task(task["id"], status="processing", progress=15)
         try:
             def prog_cb(p):
                 store.update_task(task["id"], progress=p)
-            res, acc_id = _run_generation(prompt, "video", timeout, on_progress=prog_cb, reference_image=ref_img)
+            res, acc_id = _run_generation(prompt, "video", timeout, on_progress=prog_cb,
+                                          reference_image=ref_img, on_acquired=_on_acquired)
             vurl = media_url(res["filename"])
             store.update_task(task["id"], status="completed", progress=100, account=acc_id,
-                              elapsed=round(time.time() - t0, 1),
+                              elapsed=round(time.time() - timing["t0"], 1),
                               url=vurl,
                               video={"url": vurl},
                               result={"url": vurl,
@@ -1059,7 +1193,7 @@ async def create_video(req: VideoRequest, _=Depends(auth)):
                                       "bytes": res["size"], "kind": res["kind"]})
         except Exception as exc:  # noqa: BLE001
             store.update_task(task["id"], status="failed",
-                              elapsed=round(time.time() - t0, 1), error=str(exc))
+                              elapsed=round(time.time() - timing["t0"], 1), error=str(exc))
 
     threading.Thread(target=worker, daemon=True).start()
     return {"id": task["id"], "task_id": task["id"], "object": "video.task", "status": "queued",
@@ -2290,7 +2424,7 @@ async def admin_repo_push(payload: dict = Body(default={}), _=Depends(auth)):
 @app.on_event("startup")
 async def _startup():
     for task in list(store.tasks.values()):
-        if task.get("kind") == "image" and task.get("status") in ("queued", "processing"):
+        if task.get("kind") in ("image", "video") and task.get("status") in ("queued", "processing"):
             store.update_task(task["id"], status="failed", error="服务重启中断了任务，请重新提交")
     if not CFG.api_key:
         import secrets

@@ -34,6 +34,11 @@
   - 支持上传首帧参考图（Data URL / HTTP URL）进行严格首帧图生视频创作。
   - 异步任务架构（`/v1/videos` 创建任务 + `/v1/videos/{task_id}` 状态轮询）。
   - 内置媒体资源服务 `/v1/media/{filename}`，自动持久化存储生成的 MP4 / WebP 资源。
+- ⚡ **真多账号并行并发（Multi-Account Parallel Execution）**
+  - 基于 Chromium 原生 `Target.createBrowserContext` 隐身隔离容器，多任务在独立沙箱中并发执行。
+  - 多账号同时生图、生视频、流式对话零互相阻塞，Cookie 与 Session 100% 隔离绝不串扰。
+  - 内置智能账号冲突调度器，同账号自动互斥防踩踏，多账号自动并行跑满。
+  - 可通过 `MUSE2API_CONCURRENCY` 随机器性能灵活调大并发上限（默认 2 并发）。
 - 🔄 **多账号池与热连接亲和调度**
   - 支持导入无上限的 Muse 账号矩阵。
   - 基于热连接亲和（Warm-Tab Affinity）与 LRU 策略智能分发，兼顾 2 秒级极速响应与多号均衡消耗。
@@ -231,6 +236,7 @@ curl -X POST "http://localhost:18610/v1/images/generations" \
 | `MUSE2API_PUBLIC_BASE` | `空` | 对外完整 URL 前缀，留空时前端自动识别访问来源 |
 | `MUSE2API_CHROMIUM` | `chromium` | 浏览器可执行程序完整路径 |
 | `MUSE2API_CDP_PORT` | `19210` | 内部 CDP 调试通信端口 |
+| `MUSE2API_CONCURRENCY` | `2` | 最大并发生成任务数（支持随服务器资源自由调高，默认 2） |
 | `MUSE2API_IMAGE_TIMEOUT` | `240` | 生图超时上限（秒） |
 | `MUSE2API_VIDEO_TIMEOUT` | `600` | 生视频超时上限（秒） |
 | `MUSE2API_CHAT_TIMEOUT` | `300` | 对话生成超时上限（秒） |
@@ -260,6 +266,7 @@ curl -X POST "http://localhost:18610/v1/images/generations" \
 - 🌟 **[@CarloCPP](https://github.com/CarloCPP)** (PR [#6](https://github.com/czg86389-hub/muse2api/pull/6)) —— 贡献 Tampermonkey 油猴一键导号脚本及已禁用账号自动保活配置
 - 🌟 **[@djs-91](https://github.com/djs-91)** (PR [#9](https://github.com/czg86389-hub/muse2api/pull/9)) —— 修复未配置 `MUSE2API_PUBLIC_BASE` 时 Base URL 坍缩导致管理页地址解析异常
 - 🌟 **[@toby-bridges](https://github.com/toby-bridges)** (PR [#8](https://github.com/czg86389-hub/muse2api/pull/8)) —— 适配 muse.ai 现网中文 UI、修复附件上传确认与 Stop 状态误判、强化视频成品与封面防误选
+- 🌟 **[@LF2023](https://github.com/LF2023)** (PR [#18](https://github.com/czg86389-hub/muse2api/pull/18)) —— 修复视频生成仅凭 tid 命中封面静帧问题，规范预期匹配与防误选机制
 
 欢迎大家提交 PR 与 Issue，共同把项目打磨得更强更好用！
 

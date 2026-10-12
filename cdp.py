@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 import time
 
+import threading
+
 import requests
 import websocket
 
@@ -17,24 +19,26 @@ class CDP:
         self.ws = websocket.create_connection(ws_url, timeout=timeout, max_size=max_size)
         self.timeout = timeout
         self._id = 0
+        self._lock = threading.Lock()
 
     def send(self, method: str, params: dict | None = None, timeout: float | None = None):
-        self._id += 1
-        mid = self._id
-        self.ws.send(json.dumps({"id": mid, "method": method, "params": params or {}}))
-        deadline = time.time() + (timeout or self.timeout)
-        while time.time() < deadline:
-            try:
-                msg = json.loads(self.ws.recv())
-            except websocket.WebSocketTimeoutException:
-                continue
-            except Exception:  # noqa: BLE001
-                continue
-            if msg.get("id") == mid:
-                if "error" in msg:
-                    raise CDPError(f"{method}: {msg['error']}")
-                return msg
-        raise TimeoutError(f"CDP {method} 超时")
+        with self._lock:
+            self._id += 1
+            mid = self._id
+            self.ws.send(json.dumps({"id": mid, "method": method, "params": params or {}}))
+            deadline = time.time() + (timeout or self.timeout)
+            while time.time() < deadline:
+                try:
+                    msg = json.loads(self.ws.recv())
+                except websocket.WebSocketTimeoutException:
+                    continue
+                except Exception:  # noqa: BLE001
+                    continue
+                if msg.get("id") == mid:
+                    if "error" in msg:
+                        raise CDPError(f"{method}: {msg['error']}")
+                    return msg
+            raise TimeoutError(f"CDP {method} 超时")
 
     def js(self, expr: str, await_promise: bool = False, timeout: float | None = None):
         r = self.send("Runtime.evaluate",
@@ -58,10 +62,11 @@ class CDP:
                 on_event(ev)
 
     def close(self):
-        try:
-            self.ws.close()
-        except Exception:  # noqa: BLE001
-            pass
+        with self._lock:
+            try:
+                self.ws.close()
+            except Exception:  # noqa: BLE001
+                pass
 
 
 def http_json(url: str, timeout: float = 5.0):

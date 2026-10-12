@@ -1,10 +1,10 @@
 {
-  "version": "1.5.4",
-  "updated_at": "2026-10-06",
+  "version": "1.6.0",
+  "updated_at": "2026-10-11",
   "repo": "https://github.com/czg86389-hub/muse2api",
   "highlights": [
-    "媒体库新增文件批量选择、一键全选与按需删除功能，有效释放 VPS 磁盘存储空间",
-    "后端新增 POST /admin/media/delete 与 DELETE /admin/media/{name}，严格防范路径穿越安全风险",
-    "新增媒体管理自动化测试套件"
+    "支持多账号真并行并发执行（基于 Chromium 独立 BrowserContext 隐身容器隔离，多账号间 Cookie / Session 零污染互不干扰）",
+    "引入智能账号池调度器与并发锁（支持通过 MUSE2API_CONCURRENCY 配置并发槽位上限，同账号互斥防踩踏，多账号自动并行调度）",
+    "合并社区 PR #18：精确区分视频与封面静帧匹配逻辑，彻底杜绝视频误返回静止图片问题"
   ]
 }
