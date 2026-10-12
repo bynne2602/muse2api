@@ -61,6 +61,9 @@ Thumbs.db
 *.tar.gz
 *.tar
 
+# Local Python virtual environments
+.venv/
+
 # Local runtime profiles and logs
 profiles/
 logs/

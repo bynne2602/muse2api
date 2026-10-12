@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Muse2API Cookie 导入",
+  "name": "Muse2API - Kết nối Muse.ai",
   "version": "1.0.0",
-  "description": "一键把 muse.ai 的登录 Cookie 导入到你的 muse2api 服务。不用装 Python、不用开终端。",
+  "description": "Chuyển Cookie đăng nhập muse.ai vào dịch vụ Muse2API của bạn.",
   "permissions": ["cookies", "storage", "activeTab"],
   "host_permissions": [
     "https://muse.ai/*",
@@ -11,7 +11,7 @@
     "https://*/*"
   ],
   "action": {
-    "default_title": "Muse2API Cookie 导入",
+    "default_title": "Kết nối Muse2API",
     "default_popup": "popup.html"
   }
 }
