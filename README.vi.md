@@ -34,22 +34,42 @@ API tự host tương thích OpenAI cho Muse web app. Bản community này kế 
 
 Dữ liệu tài khoản và file tạo ra nằm trong `./data`. Hãy sao lưu thư mục này an toàn. Không công khai cookie, API key, browser profile hoặc media riêng tư.
 
-## Chạy bằng Python
+## Chạy bằng Python (không cần Docker)
 
-Cần Python 3.10 trở lên, Chromium/Chrome và các thư viện hệ thống cần thiết cho Chromium.
+Cần Python 3.10 trở lên và Google Chrome hoặc Chromium. Tạo môi trường riêng, cài thư viện rồi tạo file cấu hình:
 
-```sh
+```powershell
 python -m venv .venv
-# Windows: .venv\Scripts\Activate.ps1
-# Linux/macOS: source .venv/bin/activate
-python -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
-Sao chép `.env.example` thành `.env`, đặt `MUSE2API_KEY` riêng rồi chạy:
+Mở `.env`, đặt `MUSE2API_KEY` thành một key bí mật của riêng bạn. Không dùng key mẫu công khai và không commit file `.env`. Sau đó chạy:
 
-```sh
-python -m uvicorn app:app --host 127.0.0.1 --port 18610
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 18610
 ```
+
+Mở `http://127.0.0.1:18610/admin` để vào trang quản trị. Dừng dịch vụ bằng `Ctrl+C`. Nếu dùng Linux/macOS, thay đường dẫn Python trong môi trường ảo bằng `.venv/bin/python`; các bước còn lại tương tự.
+
+### Tự khởi động khi đăng nhập Windows
+
+Sau khi chạy thử thành công ở trên và đã tạo `.env`, có thể dùng **Task Scheduler (Bộ lập lịch tác vụ)** để khởi động dịch vụ mỗi khi bạn đăng nhập:
+
+1. Nhấn `Win + R`, nhập `taskschd.msc`, rồi chọn **Create Task…**.
+2. Tab **General**: đặt tên `Muse2API`; chọn **Run only when user is logged on**.
+3. Tab **Triggers**: chọn **New…** → **Begin the task: At log on** → **OK**.
+4. Tab **Actions**: chọn **New…** rồi điền các giá trị dưới đây, thay `C:\Users\TenBan\muse2api` bằng thư mục repo thực tế:
+
+   - **Program/script:** `C:\Users\TenBan\muse2api\.venv\Scripts\python.exe`
+   - **Add arguments:** `-m uvicorn app:app --host 127.0.0.1 --port 18610`
+   - **Start in:** `C:\Users\TenBan\muse2api`
+
+5. Chọn **OK** để lưu. Có thể chọn tác vụ Muse2API trong thư viện Task Scheduler và bấm **Run** để khởi động ngay mà không cần chờ đăng nhập lần sau.
+
+Đảm bảo `.env` nằm trong thư mục repo và chứa `MUSE2API_KEY` của bạn. Để dịch vụ truy cập riêng trên máy, giữ `--host 127.0.0.1`; không mở cổng ra Internet nếu chưa cấu hình HTTPS và kiểm soát truy cập phù hợp.
+
+Dữ liệu tài khoản và file tạo ra nằm trong `./data`. Hãy sao lưu thư mục này an toàn. Không công khai Cookie, API key, browser profile hoặc media riêng tư.
 
 ## Gọi API
 
