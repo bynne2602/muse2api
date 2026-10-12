@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>muse2api · 账号池控制台</title>
+<title>Muse2API · Bảng điều khiển</title>
 <style>
   :root{
     --bg:#0a0e17; --bg2:#0e1421; --panel:#121a2b; --panel2:#0f1626;
@@ -185,6 +185,24 @@
   .keybox.ok .lbl{color:var(--ok)}
   .keybox.miss .lbl{color:var(--warn)}
   .updpill-alert{border-color:rgba(251,191,36,.8)!important;background:rgba(251,191,36,.15)!important;color:var(--warn)!important;animation:pulse 1.6s infinite}
+  main{max-width:1180px;padding:18px}
+  .hwrap{padding:10px 18px;gap:10px}
+  nav.tabs{gap:2px;margin-bottom:14px}
+  nav.tabs button{padding:8px 13px}
+  .card{padding:15px;margin-bottom:12px}
+  .stats{gap:9px;margin-bottom:12px}
+  .stat{padding:12px 14px}
+  .stat .v{font-size:22px}
+  .stepbox{gap:10px;padding:11px 0}
+  #btnRepoTop,#repoPanel,#updateBanner{display:none!important}
+  @media(max-width:760px){
+    main{padding:12px}.hwrap{padding:9px 12px}
+    .logo{gap:7px;flex-wrap:wrap;font-size:15px}.logo small{font-size:11px}
+    .pills{margin-left:0;width:100%;gap:6px}.keybox{flex:1;min-width:240px}.keybox input{width:100%;min-width:0}
+    nav.tabs{overflow-x:auto;flex-wrap:nowrap}nav.tabs button{padding:8px 10px;font-size:12px}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat:last-child{grid-column:span 2}
+    th,td{padding:9px 10px}
+  }
 </style>
 </head>
 <body>
@@ -192,27 +210,24 @@
 <header>
   <div class="hwrap">
     <div class="logo">
-      <span class="dot"></span>muse2api <small>Muse 网页额度 · 反代 API</small>
-      <a href="https://github.com/czg86389-hub/muse2api" target="_blank" class="pill" style="margin-left:10px;text-decoration:none;color:var(--text);border-color:var(--line2);cursor:pointer" title="打开上游开源仓库">
+      <span class="dot"></span>muse2api <small>API kết nối Muse · Tự lưu trữ</small>
+      <a href="https://github.com/bynne2602/muse2api" target="_blank" class="pill" style="margin-left:10px;text-decoration:none;color:var(--text);border-color:var(--line2);cursor:pointer" title="Mở mã nguồn community">
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="vertical-align:-2px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-        <b>GitHub 仓库</b>
+        <b>Mã nguồn</b>
       </a>
-      <a href="https://linux.do/" target="_blank" class="pill" style="text-decoration:none;color:var(--text);border-color:var(--line2);cursor:pointer" title="社区认可与友情链接：LINUX DO 社区 (https://linux.do/)">
-        🤝 <b>LINUX DO</b>
-      </a>
-      <button class="ghost mini" onclick="toggleRepoPanel()" id="btnRepoTop" style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 11px;font-size:12px" title="查看上游项目及手动更新说明">
-        📦 <span id="repoTopTxt">版本检测</span>
+      <button class="ghost mini" onclick="toggleRepoPanel()" id="btnRepoTop" style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 11px;font-size:12px" title="Thông tin phiên bản">
+        📦 <span id="repoTopTxt">Phiên bản</span>
       </button>
     </div>
     <div class="pills">
-      <span class="pill" id="pSvc"><span class="led"></span>服务 <b>—</b></span>
-      <span class="pill" id="pAcc"><span class="led"></span>账号 <b>—</b></span>
-      <span class="pill" id="pBr"><span class="led"></span>浏览器 <b>—</b></span>
-      <span class="live" id="live"><span class="led"></span>自动刷新</span>
+      <span class="pill" id="pSvc"><span class="led"></span>Dịch vụ <b>—</b></span>
+      <span class="pill" id="pAcc"><span class="led"></span>Tài khoản <b>—</b></span>
+      <span class="pill" id="pBr"><span class="led"></span>Trình duyệt <b>—</b></span>
+      <span class="live" id="live"><span class="led"></span>Tự làm mới</span>
       <span class="keybox" id="keyBox">
         <span class="lbl" id="keyLbl">API Key</span>
-        <input id="key" type="password" placeholder="粘贴 m2a_ 开头的密钥" autocomplete="off">
-        <button class="ghost mini" onclick="saveKey()">保存</button>
+        <input id="key" type="password" placeholder="Dán API key của bạn" autocomplete="off">
+        <button class="ghost mini" onclick="saveKey()">Lưu</button>
       </span>
     </div>
   </div>
@@ -256,105 +271,101 @@
   <div class="banner" id="authBanner">
     <span class="ic">🔑</span>
     <div>
-      <b>需要先填入 API Key，页面才能读到数据</b><br>
+      <b>Nhập API key để xem dữ liệu</b><br>
       <span style="color:var(--muted)">
-        API Key 是这个服务自己的「访问密码」，用来防止别人白用你的 Muse 账号额度。
-        它<b style="color:var(--text)">不是</b> Muse 的账号密码，是部署时自动生成的一串随机字符（以 <code>m2a_</code> 开头）。<br>
-        把它粘贴到右上角的输入框，点「保存」即可 —— 浏览器会记住，下次不用再输。
+        API key là mật khẩu bảo vệ dịch vụ, không phải mật khẩu Muse. Dán key vào ô phía trên rồi chọn <b style="color:var(--text)">Lưu</b>; trình duyệt sẽ ghi nhớ trên thiết bị này.
       </span>
     </div>
   </div>
 
   <nav class="tabs">
-    <button class="active" data-t="pool">账号池</button>
-    <button data-t="cookie">获取 Cookie</button>
-    <button data-t="tasks">任务记录</button>
-    <button data-t="media">媒体库</button>
-    <button data-t="play">接口测试</button>
-    <button data-t="docs">接入文档</button>
+    <button class="active" data-t="pool">Tài khoản</button>
+    <button data-t="cookie">Thêm tài khoản</button>
+    <button data-t="tasks">Tác vụ</button>
+    <button data-t="media">Thư viện</button>
+    <button data-t="play">Dùng thử</button>
+    <button data-t="docs">Hướng dẫn API</button>
   </nav>
 
   <!-- ==================== 账号池 ==================== -->
   <section class="tab active" id="tab-pool">
     <div class="warnbar" id="expWarn" style="display:none">
       <span id="expWarnText"></span>
-      <button class="ghost mini" onclick="goTab('cookie')">去重新登录</button>
+      <button class="ghost mini" onclick="goTab('cookie')">Đăng nhập lại</button>
     </div>
     <div class="card" style="border-color:rgba(79,140,255,.4)">
-      <h3>接入信息 <span class="tag">下游项目填这两个值</span></h3>
-      <div class="hint">把下面两项填进你的项目就能调用。BASE URL 就是接口地址前缀。</div>
+      <h3>Thông tin kết nối <span class="tag">Dùng cho ứng dụng của bạn</span></h3>
+      <div class="hint">Sao chép hai giá trị dưới đây vào ứng dụng cần kết nối.</div>
       <div class="row">
         <div style="flex:3">
-          <label>BASE URL（接口地址）</label>
+          <label>Địa chỉ API</label>
           <div class="copyline">
             <input type="text" id="inBase" readonly>
-            <button class="ghost mini" onclick="copyEl('inBase')">复制</button>
+            <button class="ghost mini" onclick="copyEl('inBase')">Sao chép</button>
           </div>
         </div>
         <div style="flex:3">
-          <label>API Key（访问密钥）</label>
+          <label>API key</label>
           <div class="copyline">
             <input type="text" id="inKey" readonly>
-            <button class="ghost mini" onclick="toggleKey()" id="keyEye">显示</button>
-            <button class="ghost mini" onclick="copyKey()">复制</button>
-            <button class="danger mini" onclick="rotateKey()">重新生成</button>
+            <button class="ghost mini" onclick="toggleKey()" id="keyEye">Hiện</button>
+            <button class="ghost mini" onclick="copyKey()">Sao chép</button>
+            <button class="danger mini" onclick="rotateKey()">Đổi key</button>
           </div>
         </div>
       </div>
       <div class="hint" style="margin:11px 0 0">
-        模型名：<code>muse-spark</code>（对话/代码）、<code>muse-image</code>（生图）、<code>muse-video</code>（生视频）。
-        完整调用示例见「接入文档」页签。
+        Model: <code>muse-spark</code> (chat / code), <code>muse-image</code> (ảnh), <code>muse-video</code> (video).
+        Xem ví dụ đầy đủ trong tab “Hướng dẫn API”.
       </div>
     </div>
 
     <div class="stats">
-      <div class="stat b"><div class="k">账号总数</div><div class="v" id="sTotal">0</div></div>
-      <div class="stat g"><div class="k">可用</div><div class="v" id="sOk">0</div></div>
-      <div class="stat r"><div class="k">异常</div><div class="v" id="sBad">0</div></div>
-      <div class="stat y"><div class="k">已禁用</div><div class="v" id="sDis">0</div></div>
-      <div class="stat"><div class="k">媒体文件</div><div class="v" id="sMedia">0</div></div>
+      <div class="stat b"><div class="k">Tổng tài khoản</div><div class="v" id="sTotal">0</div></div>
+      <div class="stat g"><div class="k">Sẵn sàng</div><div class="v" id="sOk">0</div></div>
+      <div class="stat r"><div class="k">Gặp lỗi</div><div class="v" id="sBad">0</div></div>
+      <div class="stat y"><div class="k">Đã tắt</div><div class="v" id="sDis">0</div></div>
+      <div class="stat"><div class="k">Tệp đã tạo</div><div class="v" id="sMedia">0</div></div>
     </div>
 
     <div class="card">
-      <h3>添加账号 <span class="tag">支持批量</span></h3>
+      <h3>Thêm tài khoản <span class="tag">Có thể nhập nhiều tài khoản</span></h3>
       <div class="hint">
-        从浏览器复制 <b>muse.ai</b> 的 Cookie 字符串粘贴进来即可。关键 cookie：
-        <code>hatch_sess</code>、<code>hatch_gw</code>、<code>hatch_vml</code>。
-        批量导入时每行一个账号，格式 <code>标签 | cookie串</code>（标签可省略）。
+        Dán Cookie của muse.ai vào đây. Mỗi dòng nhập một tài khoản; có thể thêm tên theo dạng <code>tên | Cookie</code>.
       </div>
       <div class="row">
         <div style="max-width:230px">
-          <label>账号标签（单条导入用）</label>
-          <input type="text" id="newLabel" placeholder="例如 muse-main">
+          <label>Tên gợi nhớ (không bắt buộc)</label>
+          <input type="text" id="newLabel" placeholder="Ví dụ: tài khoản chính">
         </div>
         <div style="flex:3">
-          <label>Cookie 字符串</label>
-          <textarea id="newCookie" rows="4" placeholder="hatch_sess=...; hatch_gw=...; hatch_vml=...&#10;或批量：&#10;acc-01 | hatch_sess=...; hatch_gw=...&#10;acc-02 | hatch_sess=...; hatch_gw=..."></textarea>
+          <label>Cookie đăng nhập</label>
+          <textarea id="newCookie" rows="3" placeholder="Dán Cookie vào đây&#10;Nhiều tài khoản: mỗi dòng một tài khoản, dạng tên | Cookie"></textarea>
         </div>
       </div>
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="primary-lg" onclick="addAccount(false)">导入账号</button>
-        <button class="ghost" onclick="document.getElementById('newCookie').value='';">清空</button>
+        <button class="primary-lg" onclick="addAccount(false)">Thêm vào danh sách</button>
+        <button class="ghost" onclick="document.getElementById('newCookie').value='';">Xóa nội dung</button>
       </div>
     </div>
 
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:10px">
-          <h3 style="margin:0">账号列表 <span class="tag" id="poolCount">0</span></h3>
-          <span class="badge ok" id="keepaliveBadge" style="font-size:11px">● 自动保活轮转中 (30m)</span>
+          <h3 style="margin:0">Danh sách tài khoản <span class="tag" id="poolCount">0</span></h3>
+          <span class="badge ok" id="keepaliveBadge" style="font-size:11px">Tự làm mới phiên (30 phút)</span>
         </div>
         <div style="display:flex;gap:8px">
-          <button class="secondary" id="btnKeepaliveAll" onclick="keepaliveAll()" style="font-size:12px;padding:6px 14px">⚡ 一键保活所有账号</button>
+          <button class="secondary" id="btnKeepaliveAll" onclick="keepaliveAll()" style="font-size:12px;padding:6px 14px">Làm mới tất cả</button>
         </div>
       </div>
-      <div class="hint">系统已开启<b>后台每 30 分钟静默保活</b>与<b>多账号公平轮转（LRU）</b>；「测试」会真实打开 muse.ai 验证会话。</div>
+      <div class="hint">Phiên đăng nhập được tự làm mới định kỳ. Chọn “Kiểm tra” để xác minh tài khoản trên muse.ai.</div>
       <div class="tblwrap"><table>
         <thead><tr>
-          <th>标签</th><th>账号 ID</th><th>状态</th><th>有效期</th><th>额度</th><th>启用</th><th>Cookie</th>
-          <th>最后使用</th><th>备注</th><th style="min-width:250px">操作</th>
+          <th>Tên</th><th>ID</th><th>Trạng thái</th><th>Phiên hết hạn</th><th>Hạn mức</th><th>Hoạt động</th><th>Cookie</th>
+          <th>Dùng gần nhất</th><th>Ghi chú</th><th style="min-width:250px">Thao tác</th>
         </tr></thead>
-        <tbody id="poolBody"><tr><td colspan="10" class="empty">加载中…</td></tr></tbody>
+        <tbody id="poolBody"><tr><td colspan="10" class="empty">Đang tải…</td></tr></tbody>
       </table></div>
     </div>
   </section>
@@ -362,24 +373,20 @@
   <!-- ==================== 获取 Cookie ==================== -->
   <section class="tab" id="tab-cookie">
     <div class="card" style="border-color:rgba(52,211,153,.45)">
-      <h3>方式一：浏览器扩展 <span class="tag">推荐 · 零命令行 · 全平台</span></h3>
+      <h3>Cách nhanh nhất: tiện ích trình duyệt <span class="tag">Khuyên dùng</span></h3>
       <div class="hint">
-        用一个浏览器小扩展，把你<b>自己电脑上已经登录好的 muse.ai 登录态</b>同步过来。
-        不用装 Python、不用开终端、不用敲命令。<br>
-        <b>为什么必须用扩展</b>：muse.ai 的 4 条核心 cookie 都带
-        <code>httpOnly</code> 标记，网页脚本（F12 里敲 <code>document.cookie</code>、
-        小书签）读不到；只有浏览器扩展的 <code>cookies</code> 接口能拿到。
+        Dùng tiện ích để chuyển phiên đăng nhập muse.ai từ trình duyệt của bạn sang dịch vụ. Không cần dùng dòng lệnh.
       </div>
 
       <div class="stepbox">
         <div class="stepno">1</div>
         <div>
-          <b>下载并解压扩展</b>
+          <b>1. Tải tiện ích</b>
           <div class="hint" style="margin:4px 0 9px">
-            解压到一个你不会删掉的目录，比如 <code>D:\muse2api-extension</code>。
+            Tải và giải nén vào một thư mục dễ tìm.
           </div>
-          <a class="btnlike" href="/admin/extension" download>⬇ 下载 muse2api-extension.zip</a>
-          <button class="ghost mini" onclick="loadExtFiles()">查看包含哪些文件</button>
+          <a class="btnlike" href="/admin/extension" download>⬇ Tải tiện ích trình duyệt</a>
+          <button class="ghost mini" onclick="loadExtFiles()">Xem tệp</button>
           <span class="hint" id="extFiles" style="margin-left:8px"></span>
         </div>
       </div>
@@ -387,15 +394,15 @@
       <div class="stepbox">
         <div class="stepno">2</div>
         <div>
-          <b>在浏览器里加载扩展</b>
+          <b>2. Nạp tiện ích vào trình duyệt</b>
           <div class="hint" style="margin:4px 0 9px">
-            以 Chrome 为例（Edge / Brave / 360 极速 等 Chromium 内核浏览器步骤类似）：
+            Chrome, Edge và các trình duyệt tương thích Chromium đều dùng được:
           </div>
           <ol class="olsteps">
-            <li>地址栏输入 <code>chrome://extensions</code> 回车</li>
-            <li>打开右上角 <b>开发者模式</b> 开关</li>
-            <li>点左上角 <b>加载已解压的扩展程序</b></li>
-            <li>选中第 1 步解压出来的<b>文件夹</b>（不是里面的单个文件）</li>
+            <li>Mở <code>chrome://extensions</code></li>
+            <li>Bật <b>Chế độ dành cho nhà phát triển</b></li>
+            <li>Chọn <b>Tải tiện ích đã giải nén</b></li>
+            <li>Chọn thư mục đã giải nén ở bước 1</li>
           </ol>
         </div>
       </div>
@@ -403,25 +410,23 @@
       <div class="stepbox">
         <div class="stepno">3</div>
         <div>
-          <b>登录 muse.ai，然后点扩展图标导入</b>
+          <b>3. Đăng nhập và nhập tài khoản</b>
           <div class="hint" style="margin:4px 0 9px">
-            先在你自己的浏览器里打开 <code>https://muse.ai/</code> 并登录
-            （登录到能看到聊天界面为止），再点浏览器工具栏上的扩展图标，
-            把下面两项填进去，点「读取并导入」。
+            Đăng nhập <code>https://muse.ai/</code>, mở tiện ích vừa cài, nhập địa chỉ API và API key bên dưới rồi chọn “Đọc và nhập”.
           </div>
           <div class="row">
             <div style="flex:3">
-              <label>BASE URL（填进扩展）</label>
+              <label>Địa chỉ API</label>
               <div class="copyline">
                 <input type="text" id="exBase" readonly>
-                <button class="ghost mini" onclick="copyEl('exBase')">复制</button>
+                <button class="ghost mini" onclick="copyEl('exBase')">Sao chép</button>
               </div>
             </div>
             <div style="flex:3">
-              <label>API Key（填进扩展）</label>
+              <label>API key</label>
               <div class="copyline">
                 <input type="text" id="exKey" readonly>
-                <button class="ghost mini" onclick="copyExKey()">复制</button>
+                <button class="ghost mini" onclick="copyExKey()">Sao chép</button>
               </div>
             </div>
           </div>
@@ -430,94 +435,80 @@
     </div>
 
     <div class="card">
-      <h3>方式二：手动复制 <span class="tag">零安装 · 兜底</span></h3>
+      <h3>Cách khác: nhập Cookie thủ công <span class="tag">Nâng cao</span></h3>
       <div class="hint">
-        不想装扩展的话，可以手动把 cookie 串抠出来。关键是用
-        <b>「网络」面板的请求标头</b>，而不是 Console —— 请求头里的
-        <code>cookie:</code> 一行<b>包含 httpOnly 的那几条</b>，Console 读不到。
+        Nếu không dùng tiện ích, hãy lấy Cookie trong công cụ dành cho nhà phát triển của trình duyệt.
+        Chọn tab <b>Network</b>, sao chép dòng <code>cookie:</code> trong Request Headers.
       </div>
       <ol class="olsteps" style="margin-top:10px">
-        <li>在你自己的浏览器里打开并登录 <code>https://muse.ai/</code>，停在聊天界面</li>
-        <li>按 <kbd>F12</kbd> 打开开发者工具，切到 <b>网络 / Network</b> 面板</li>
-        <li>按 <kbd>F5</kbd> 刷新页面，让请求列表出现内容</li>
-        <li>点列表里<b>任意一条 muse.ai 的请求</b>（第一个就行）</li>
-        <li>右侧找到 <b>标头 / Headers</b> → 往下滚到 <b>请求标头 / Request Headers</b></li>
-        <li>找到以 <code>cookie:</code> 开头的那一行，<b>把冒号后面的整串复制</b>
-            （从 <code>hatch_sess=</code> 开始，一直到行尾）</li>
-        <li>粘到下面「方式三」的输入框里，点导入</li>
+        <li>Mở và đăng nhập <code>https://muse.ai/</code></li>
+        <li>Nhấn <kbd>F12</kbd>, chọn tab <b>Network</b></li>
+        <li>Nhấn <kbd>F5</kbd> để tải lại trang</li>
+        <li>Chọn một yêu cầu tới <b>muse.ai</b></li>
+        <li>Trong <b>Headers → Request Headers</b>, tìm dòng <code>cookie:</code></li>
+        <li>Sao chép toàn bộ nội dung sau dấu hai chấm, bắt đầu từ <code>hatch_sess=</code></li>
+        <li>Dán Cookie vào ô nhập bên dưới</li>
       </ol>
       <div class="hint" style="margin-top:10px;color:var(--warn)">
-        注意：是<b>请求标头</b>里的 <code>cookie:</code>，不是「响应标头」。
-        响应标头里的 <code>set-cookie</code> 只有部分 cookie，会缺东西。
+        Lưu ý: sao chép dòng <code>cookie:</code> trong <b>Request Headers</b>, không dùng <code>set-cookie</code> trong Response Headers.
       </div>
     </div>
 
     <div class="card">
-      <h3>方式三：粘贴导入 / 本机脚本 <span class="tag">进阶</span></h3>
-      <div class="hint">已经拿到 cookie 串的话，直接粘在这里导入（方式二手动复制的串也粘这里）。</div>
+      <h3>Nhập Cookie hoặc dùng script</h3>
+      <div class="hint">Dán Cookie đã sao chép vào đây để nhập.</div>
       <div class="row" style="margin-top:10px">
         <div style="max-width:230px">
-          <label>账号标签</label>
-          <input type="text" id="mLabel" placeholder="例如 acc-01">
+          <label>Tên gợi nhớ (không bắt buộc)</label>
+          <input type="text" id="mLabel" placeholder="Ví dụ: tài khoản 01">
         </div>
         <div style="flex:3">
-          <label>Cookie 字符串</label>
+          <label>Cookie đăng nhập</label>
           <textarea id="mCookie" rows="3" placeholder="hatch_sess=...; hatch_gw=...; hatch_vml=...; hatch_native_auth_device=..."></textarea>
         </div>
       </div>
       <div style="margin-top:12px">
-        <button class="primary-lg" onclick="addAccount(true)">导入账号</button>
+        <button class="primary-lg" onclick="addAccount(true)">Thêm tài khoản</button>
       </div>
 
       <div class="hint" style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
-        如果你习惯命令行、或者想用独立浏览器登录（不碰日常浏览器），也可以用这个脚本。
-        它只用 Python 标准库，<b>不需要 pip 安装任何东西</b>。
+        Hoặc dùng script Python để đăng nhập bằng cửa sổ trình duyệt riêng. Không cần cài thêm thư viện.
       </div>
       <div class="row" style="margin-top:10px">
         <div style="flex:2">
-          <label>① 下载脚本</label>
+          <label>① Tải script</label>
           <div class="copyline">
             <a class="btnlike ghostlike" href="/admin/cookie-helper?download=1" download>⬇ get_muse_cookie.py</a>
-            <a class="btnlike ghostlike" href="/admin/cookie-helper" target="_blank">查看源码</a>
+            <a class="btnlike ghostlike" href="/admin/cookie-helper" target="_blank">Xem mã nguồn</a>
           </div>
         </div>
         <div style="flex:4;min-width:0">
-          <label>② 运行（地址和密钥已帮你填好）</label>
-          <pre class="code" id="cmdBox"><span class="cp" onclick="copyCmd()">复制</span><span id="cmdText">正在生成命令…</span></pre>
+          <label>② Chạy script (đã điền sẵn địa chỉ và key)</label>
+          <pre class="code" id="cmdBox"><span class="cp" onclick="copyCmd()">Sao chép</span><span id="cmdText">Đang tạo lệnh…</span></pre>
         </div>
       </div>
       <div class="hint" style="margin-top:8px">
-        ③ 在弹出的浏览器窗口里登录 muse.ai → 脚本自动抓取并上传 → 自动关窗。
+        ③ Đăng nhập muse.ai trong cửa sổ bật lên. Script sẽ tự gửi Cookie rồi đóng cửa sổ.
       </div>
     </div>
 
     <div class="card">
-      <h3>Cookie 有效期说明 <span class="tag">实测</span></h3>
+      <h3>Thời hạn Cookie <span class="tag">Tham khảo</span></h3>
       <div class="hint" style="margin:0 0 12px">
-        实测 muse.ai 各条 cookie 的有效期（不同账号可能略有差异）：
+        Thời hạn tham khảo; có thể khác nhau tùy tài khoản.
       </div>
       <div class="tblwrap"><table>
-        <thead><tr><th>cookie</th><th>httpOnly</th><th>实测有效期</th><th>作用</th></tr></thead>
+        <thead><tr><th>Cookie</th><th>httpOnly</th><th>Thời hạn</th><th>Vai trò</th></tr></thead>
         <tbody>
-          <tr><td class="mono">hatch_sess</td><td>是</td><td><b style="color:var(--ok)">约 30 天</b></td><td>主会话，决定能不能登录</td></tr>
-          <tr><td class="mono">hatch_gw</td><td>是</td><td><b style="color:var(--ok)">约 1 年</b></td><td>网关令牌</td></tr>
-          <tr><td class="mono">hatch_vml</td><td>是</td><td><b style="color:var(--bad)">约 2 天</b></td><td>短效校验令牌，<b>决定账号寿命</b></td></tr>
-          <tr><td class="mono">hatch_native_auth_device</td><td>是</td><td><b style="color:var(--ok)">约 30 天</b></td><td>设备标识（匿名访客也有，不是登录凭证）</td></tr>
+          <tr><td class="mono">hatch_sess</td><td>Có</td><td><b style="color:var(--ok)">Khoảng 30 ngày</b></td><td>Phiên đăng nhập chính</td></tr>
+          <tr><td class="mono">hatch_gw</td><td>Có</td><td><b style="color:var(--ok)">Khoảng 1 năm</b></td><td>Token gateway</td></tr>
+          <tr><td class="mono">hatch_vml</td><td>Có</td><td><b style="color:var(--bad)">Khoảng 2 ngày</b></td><td>Token ngắn hạn, quyết định thời hạn phiên</td></tr>
+          <tr><td class="mono">hatch_native_auth_device</td><td>Có</td><td><b style="color:var(--ok)">Khoảng 30 ngày</b></td><td>Mã thiết bị</td></tr>
         </tbody>
       </table></div>
       <div class="hint" style="margin:12px 0 0;line-height:1.85">
-        <b>账号实际能活多久？</b>取决于最早过期的那条核心 cookie，也就是
-        <code>hatch_vml</code> —— 大约 <b>2 天</b>。<br>
-        <b style="color:var(--warn)">注意：这个 2 天不会因为「用得多」而延长。</b>
-        本服务每次生成完成后确实会把 muse.ai 新下发的 cookie 读回来写进账号池
-        （所以你会看到「有效期」列的数值有更新），但核心 cookie 的到期时间
-        <b>不会被推后</b>（已做生成前后对照实验确认）。<br>
-        <b>所以：大约每 2 天要重新导入一次。</b>好在很快 —— 点一下扩展图标就行。<br>
-        <b>建议一次多导几个账号</b>：账号池按「最久未用」轮转，多账号既更稳，
-        也能把重导摊开（每天导一个，而不是所有账号同时失效）。<br>
-        <b>什么时候要重导？</b>账号列表里「有效期」变成
-        <span class="badge bad">已过期</span>、状态变成
-        <span class="badge bad">异常</span>，或出现「缺核心」标记时。
+        Thời hạn phiên thường phụ thuộc vào <code>hatch_vml</code> (khoảng 2 ngày) và không tự kéo dài khi sử dụng.
+        Khi phiên hết hạn hoặc tài khoản báo lỗi, hãy đăng nhập lại và nhập Cookie mới.
       </div>
     </div>
   </section>
@@ -525,18 +516,18 @@
   <!-- ==================== 任务记录 ==================== -->
   <section class="tab" id="tab-tasks">
     <div class="card">
-      <h3>生成任务记录 <span class="tag" id="taskCount">0</span></h3>
-      <div class="hint">生视频是异步任务，状态会从 queued → processing → succeeded / failed。</div>
+      <h3>Tác vụ đã chạy <span class="tag" id="taskCount">0</span></h3>
+      <div class="hint">Tác vụ video chạy nền và cập nhật trạng thái tự động.</div>
       <div style="margin-bottom:12px;display:flex;gap:9px">
-        <button class="ghost mini" onclick="loadTasks()">刷新</button>
-        <button class="danger mini" onclick="clearTasks()">清空全部</button>
+        <button class="ghost mini" onclick="loadTasks()">Làm mới</button>
+        <button class="danger mini" onclick="clearTasks()">Xóa lịch sử</button>
       </div>
       <div class="tblwrap"><table>
         <thead><tr>
-          <th>任务 ID</th><th>类型</th><th>提示词</th><th>状态</th>
-          <th>耗时</th><th>创建时间</th><th>结果 / 错误</th><th></th>
+          <th>Mã tác vụ</th><th>Loại</th><th>Mô tả</th><th>Trạng thái</th>
+          <th>Thời gian</th><th>Ngày tạo</th><th>Kết quả / lỗi</th><th></th>
         </tr></thead>
-        <tbody id="taskBody"><tr><td colspan="8" class="empty">加载中…</td></tr></tbody>
+        <tbody id="taskBody"><tr><td colspan="8" class="empty">Đang tải…</td></tr></tbody>
       </table></div>
     </div>
   </section>
@@ -546,46 +537,46 @@
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
         <div>
-          <h3 style="margin:0 0 4px">媒体库 <span class="tag" id="mediaCount">0</span></h3>
-          <div class="hint" style="margin:0">所有已生成并落盘的图片 / 视频，可直接下载或把链接给下游项目使用。</div>
+          <h3 style="margin:0 0 4px">Thư viện tệp <span class="tag" id="mediaCount">0</span></h3>
+          <div class="hint" style="margin:0">Ảnh và video đã tạo. Bạn có thể xem, tải xuống hoặc dùng liên kết trong ứng dụng khác.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <button class="ghost mini" onclick="loadMedia()">刷新</button>
-          <button class="ghost mini" id="btnSelectAllMedia" onclick="toggleSelectAllMedia()">全选</button>
-          <button class="danger mini" id="btnDelSelectedMedia" onclick="delSelectedMedia()" style="display:none">删除选中 (<span id="selMediaCount">0</span>)</button>
+          <button class="ghost mini" onclick="loadMedia()">Làm mới</button>
+          <button class="ghost mini" id="btnSelectAllMedia" onclick="toggleSelectAllMedia()">Chọn tất cả</button>
+          <button class="danger mini" id="btnDelSelectedMedia" onclick="delSelectedMedia()" style="display:none">Xóa mục đã chọn (<span id="selMediaCount">0</span>)</button>
         </div>
       </div>
-      <div class="grid" id="mediaGrid"><div class="empty">加载中…</div></div>
+      <div class="grid" id="mediaGrid"><div class="empty">Đang tải…</div></div>
     </div>
   </section>
 
   <!-- ==================== 接口测试 ==================== -->
   <section class="tab" id="tab-play">
     <div class="card">
-      <h3>在线生图测试 <span class="tag">POST /v1/images/generations</span></h3>
-      <div class="hint">真实调用 muse.ai 生成，图片约 10–30 秒返回。</div>
+      <h3>Tạo ảnh thử <span class="tag">POST /v1/images/generations</span></h3>
+      <div class="hint">Gửi yêu cầu tạo ảnh thật tới muse.ai; thường mất 10–30 giây.</div>
       <div class="row">
-        <div style="flex:3"><label>提示词</label>
-          <input type="text" id="imgPrompt" value="一只戴宇航头盔的柴犬，赛博朋克风格，霓虹灯背景"></div>
-        <div style="max-width:140px"><label>比例</label>
+        <div style="flex:3"><label>Mô tả ảnh</label>
+          <input type="text" id="imgPrompt" value="Một chú chó Shiba đội mũ phi hành gia, phong cách cyberpunk, nền đèn neon"></div>
+        <div style="max-width:140px"><label>Tỷ lệ</label>
           <select id="imgSize"><option>1:1</option><option>16:9</option><option>9:16</option><option>4:3</option><option>3:4</option></select></div>
       </div>
-      <div style="margin-top:12px"><button class="primary-lg" id="imgBtn" onclick="runImage()">开始生成图片</button></div>
+      <div style="margin-top:12px"><button class="primary-lg" id="imgBtn" onclick="runImage()">Tạo ảnh</button></div>
       <div class="result" id="imgRes"></div>
     </div>
 
     <div class="card">
-      <h3>在线生视频测试 <span class="tag">POST /v1/videos</span></h3>
-      <div class="hint">异步任务，一般 60–120 秒完成，页面会自动轮询进度。</div>
+      <h3>Tạo video thử <span class="tag">POST /v1/videos</span></h3>
+      <div class="hint">Tác vụ chạy nền, thường mất 60–120 giây. Trang sẽ tự cập nhật tiến độ.</div>
       <div class="row">
-        <div style="flex:3"><label>提示词</label>
-          <input type="text" id="vidPrompt" value="一只橙色小猫在草地上慢慢走动，阳光明媚"></div>
-        <div style="max-width:110px"><label>时长(秒)</label>
+        <div style="flex:3"><label>Mô tả video</label>
+          <input type="text" id="vidPrompt" value="Một chú mèo cam chậm rãi đi trên bãi cỏ dưới nắng"></div>
+        <div style="max-width:110px"><label>Thời lượng (giây)</label>
           <input type="number" id="vidDur" value="5" min="1" max="30"></div>
-        <div style="max-width:140px"><label>比例</label>
+        <div style="max-width:140px"><label>Tỷ lệ</label>
           <select id="vidSize"><option>16:9</option><option>9:16</option><option>1:1</option></select></div>
       </div>
-      <div style="margin-top:12px"><button class="primary-lg" id="vidBtn" onclick="runVideo()">开始生成视频</button></div>
+      <div style="margin-top:12px"><button class="primary-lg" id="vidBtn" onclick="runVideo()">Tạo video</button></div>
       <div class="result" id="vidRes"></div>
     </div>
   </section>
@@ -593,77 +584,76 @@
   <!-- ==================== 接入文档 ==================== -->
   <section class="tab" id="tab-docs">
     <div class="card doc">
-      <h3>接入说明</h3>
+      <h3>Hướng dẫn kết nối</h3>
       <div class="hint">
-        接口与 OpenAI 风格对齐，下游项目只需改 <code>base_url</code> 和 <code>api_key</code>。
-        <br>BASE URL：<code id="dBase">—</code>
+        API tương thích OpenAI. Trong ứng dụng của bạn, chỉ cần đổi <code>base_url</code> và <code>api_key</code>.
+        <br>Địa chỉ API: <code id="dBase">—</code>
       </div>
 
-      <h4>1. 可用模型</h4>
+      <h4>1. Model khả dụng</h4>
       <div class="tblwrap"><table>
-        <thead><tr><th>模型 ID</th><th>用途</th><th>接口</th></tr></thead>
+        <thead><tr><th>Mã model</th><th>Chức năng</th><th>Endpoint</th></tr></thead>
         <tbody>
-          <tr><td class="mono">muse-spark</td><td>文本 / 代码对话（支持流式）</td><td class="mono">POST /v1/chat/completions<br>POST /v1/responses</td></tr>
-          <tr><td class="mono">muse-image</td><td>文生图 / 图像编辑</td><td class="mono">POST /v1/images/generations</td></tr>
-          <tr><td class="mono">muse-video</td><td>文生视频 / 图生视频</td><td class="mono">POST /v1/videos → GET /v1/videos/{id}</td></tr>
+          <tr><td class="mono">muse-spark</td><td>Chat / lập trình (có streaming)</td><td class="mono">POST /v1/chat/completions<br>POST /v1/responses</td></tr>
+          <tr><td class="mono">muse-image</td><td>Tạo ảnh / chỉnh sửa ảnh</td><td class="mono">POST /v1/images/generations</td></tr>
+          <tr><td class="mono">muse-video</td><td>Tạo video / video từ ảnh</td><td class="mono">POST /v1/videos → GET /v1/videos/{id}</td></tr>
         </tbody>
       </table></div>
       <div class="hint" style="margin-top:6px">
-        这三个就是 Muse 系列的真实能力：<b>Muse Spark</b>（语言 / 代码）、<b>Muse Image</b>（生图）、
-        <b>Muse Video</b>（生视频）。muse.ai 网页是自动路由的 agent、界面没有模型选择器，
-        所以 <code>model</code> 字段只用于兼容下游 —— 传 <code>gpt-4o</code>、
-        <code>claude-sonnet-4</code>、<code>dall-e-3</code> 等常见名字会自动映射到对应能力。
+        Các model Muse có chức năng tương ứng: <b>Muse Spark</b> (chat / lập trình), <b>Muse Image</b> (tạo ảnh),
+        <b>Muse Video</b> (tạo video). Trang muse.ai tự chọn model, nên các tên phổ biến như
+        <code>gpt-4o</code>, <code>claude-sonnet-4</code> hoặc <code>dall-e-3</code> sẽ được ánh xạ tự động.
       </div>
 
-      <h4>2. 对话 / 写代码</h4>
-      <pre class="code"><span class="cp" onclick="cp(this)">复制</span><span class="c"># 非流式</span>
+      <h4>2. Chat / lập trình</h4>
+  <pre class="code"><span class="cp" onclick="cp(this)">Sao chép</span><span class="c"># Không streaming</span>
 curl -X POST <span class="s">"BASE/v1/chat/completions"</span> \
   -H <span class="s">"Authorization: Bearer $MUSE2API_KEY"</span> \
   -H <span class="s">"Content-Type: application/json"</span> \
-  -d <span class="s">'{"model":"muse-spark","messages":[{"role":"user","content":"写一个 Python 快排"}]}'</span>
+  -d <span class="s">'{"model":"muse-spark","messages":[{"role":"user","content":"Viết thuật toán quicksort bằng Python"}]}'</span>
 
-<span class="c"># 流式：加 "stream":true，返回标准 SSE（data: {...} / data: [DONE]）</span></pre>
+<span class="c"># Streaming: thêm "stream":true để nhận SSE chuẩn</span></pre>
 
-      <h4>3. 生图（curl）</h4>
-      <pre class="code"><span class="cp" onclick="cp(this)">复制</span>curl -X POST <span class="s">"BASE/v1/images/generations"</span> \
+      <h4>3. Tạo ảnh (curl)</h4>
+      <pre class="code"><span class="cp" onclick="cp(this)">Sao chép</span>curl -X POST <span class="s">"BASE/v1/images/generations"</span> \
   -H <span class="s">"Authorization: Bearer $MUSE2API_KEY"</span> \
   -H <span class="s">"Content-Type: application/json"</span> \
-  -d <span class="s">'{"prompt":"一只戴宇航头盔的柴犬","size":"1:1","response_format":"url"}'</span>
+  -d <span class="s">'{"prompt":"Một chú chó Shiba đội mũ phi hành gia","size":"1:1","response_format":"url"}'</span>
 
-<span class="c"># 返回</span>
+<span class="c"># Kết quả</span>
 {<span class="k">"created"</span>:1790148495,<span class="k">"data"</span>:[{
-  <span class="k">"revised_prompt"</span>:<span class="s">"一只戴宇航头盔的柴犬"</span>,
+  <span class="k">"revised_prompt"</span>:<span class="s">"Một chú chó Shiba đội mũ phi hành gia"</span>,
   <span class="k">"url"</span>:<span class="s">"http://your-server:18610/v1/media/xxxx.webp"</span>,
   <span class="k">"kind"</span>:<span class="s">"image"</span>,<span class="k">"bytes"</span>:23860}]}
 
-<span class="c"># url 是完整绝对地址，可直接给下游渲染 / 下载；/v1/media/* 无需鉴权。</span>
-<span class="c"># 想要 base64 就传 "response_format":"b64_json"。</span></pre>
+<span class="c"># url là địa chỉ đầy đủ để hiển thị/tải; /v1/media/* không cần xác thực.</span>
+<span class="c"># Để nhận base64, đặt "response_format":"b64_json".</span></pre>
 
-      <h4>4. 生视频（curl，异步）</h4>
-      <pre class="code"><span class="cp" onclick="cp(this)">复制</span><span class="c"># ① 创建任务</span>
+      <h4>4. Tạo video (curl, chạy nền)</h4>
+      <pre class="code"><span class="cp" onclick="cp(this)">Sao chép</span><span class="c"># ① Tạo tác vụ</span>
 curl -X POST <span class="s">"BASE/v1/videos"</span> \
   -H <span class="s">"Authorization: Bearer $MUSE2API_KEY"</span> \
   -H <span class="s">"Content-Type: application/json"</span> \
-  -d <span class="s">'{"prompt":"一只小猫在草地上走动","duration":5,"size":"16:9"}'</span>
+  -d <span class="s">'{"prompt":"Một chú mèo đi trên bãi cỏ","duration":5,"size":"16:9"}'</span>
 <span class="c"># → {"id":"task_xxx","status":"queued"}</span>
 
-<span class="c"># ② 轮询结果</span>
+<span class="c"># ② Kiểm tra kết quả</span>
 curl <span class="s">"BASE/v1/videos/task_xxx"</span> -H <span class="s">"Authorization: Bearer $MUSE2API_KEY"</span>
 <span class="c"># → {"status":"succeeded","result":{"url":"/v1/media/xxx.mp4"}}</span></pre>
 
-      <h4>5. Python（openai SDK 兼容）</h4>
-      <pre class="code"><span class="cp" onclick="cp(this)">复制</span><span class="k">from</span> openai <span class="k">import</span> OpenAI
+      <h4>5. Python (tương thích OpenAI SDK)</h4>
+      <pre class="code"><span class="cp" onclick="cp(this)">Sao chép</span><span class="k">from</span> openai <span class="k">import</span> OpenAI
 <span class="k">import</span> time
 
 client = OpenAI(base_url=<span class="s">"BASE/v1"</span>, api_key=<span class="s">"m2a_..."</span>)
 
-<span class="c"># 生图</span>
-r = client.images.generate(model=<span class="s">"muse-image"</span>, prompt=<span class="s">"一只戴宇航头盔的柴犬"</span>)
+<span class="c"># Tạo ảnh</span>
+r = client.images.generate(model=<span class="s">"muse-image"</span>, prompt=<span class="s">"Một chú chó Shiba đội mũ phi hành gia"</span>)
 <span class="k">print</span>(r.data[<span class="s">0</span>].url)
 
-<span class="c"># 生视频（走原生接口，因为是异步任务）</span>
-<span class="k">import</span> requests
-t = requests.post(<span class="s">"BASE/v1/videos"</span>, json={<span class="s">"prompt"</span>:<span class="s">"小猫走动"</span>,<span class="s">"duration"</span>:<span class="s">5</span>},
+<span class="c"># Tạo video (dùng API riêng vì tác vụ chạy nền)</span>
+  <span class="k">import</span> requests
+t = requests.post(<span class="s">"BASE/v1/videos"</span>, json={<span class="s">"prompt"</span>:<span class="s">"Mèo đang đi"</span>,<span class="s">"duration"</span>:<span class="s">5</span>},
                   headers={<span class="s">"Authorization"</span>:<span class="s">"Bearer m2a_..."</span>}).json()
 <span class="k">while</span> <span class="k">True</span>:
     s = requests.get(<span class="s">f"BASE/v1/videos/{t['id']}"</span>,
@@ -672,82 +662,73 @@ t = requests.post(<span class="s">"BASE/v1/videos"</span>, json={<span class="s"
     time.sleep(<span class="s">5</span>)
 <span class="k">print</span>(s)</pre>
 
-      <h4>6. 管理接口</h4>
+      <h4>6. API quản trị</h4>
       <div class="tblwrap"><table>
-        <thead><tr><th>方法</th><th>路径</th><th>说明</th></tr></thead>
+        <thead><tr><th>Phương thức</th><th>Đường dẫn</th><th>Mô tả</th></tr></thead>
         <tbody>
-          <tr><td class="mono">GET</td><td class="mono">/admin/status</td><td>服务总览 + 账号池 + 最近任务</td></tr>
-          <tr><td class="mono">GET</td><td class="mono">/admin/accounts</td><td>账号列表</td></tr>
-          <tr><td class="mono">POST</td><td class="mono">/admin/accounts</td><td>添加账号（单条 / batch 批量文本）</td></tr>
-          <tr><td class="mono">PATCH</td><td class="mono">/admin/accounts/{id}</td><td>改标签 / 启用禁用</td></tr>
-          <tr><td class="mono">DELETE</td><td class="mono">/admin/accounts/{id}</td><td>删除账号</td></tr>
-          <tr><td class="mono">POST</td><td class="mono">/admin/accounts/{id}/test</td><td>真实校验会话有效性（顺带刷新额度）</td></tr>
-          <tr><td class="mono">POST</td><td class="mono">/admin/accounts/{id}/quota</td><td>实时读取该账号剩余额度</td></tr>
-          <tr><td class="mono">POST</td><td class="mono">/admin/accounts/{id}/cookies</td><td>更新该账号 cookie</td></tr>
-          <tr><td class="mono">GET</td><td class="mono">/admin/tasks</td><td>任务记录</td></tr>
-          <tr><td class="mono">GET</td><td class="mono">/admin/media</td><td>媒体库列表</td></tr>
-          <tr><td class="mono">POST</td><td class="mono">/admin/media/delete</td><td>批量删除媒体文件</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/admin/status</td><td>Tổng quan dịch vụ, tài khoản và tác vụ</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/admin/accounts</td><td>Danh sách tài khoản</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/admin/accounts</td><td>Thêm một hoặc nhiều tài khoản</td></tr>
+          <tr><td class="mono">PATCH</td><td class="mono">/admin/accounts/{id}</td><td>Đổi tên hoặc bật / tắt</td></tr>
+          <tr><td class="mono">DELETE</td><td class="mono">/admin/accounts/{id}</td><td>Xóa tài khoản</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/admin/accounts/{id}/test</td><td>Kiểm tra phiên đăng nhập và hạn mức</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/admin/accounts/{id}/quota</td><td>Đọc hạn mức còn lại</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/admin/accounts/{id}/cookies</td><td>Cập nhật Cookie</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/admin/tasks</td><td>Lịch sử tác vụ</td></tr>
+          <tr><td class="mono">GET</td><td class="mono">/admin/media</td><td>Danh sách tệp đã tạo</td></tr>
+          <tr><td class="mono">POST</td><td class="mono">/admin/media/delete</td><td>Xóa nhiều tệp cùng lúc</td></tr>
         </tbody>
       </table></div>
 
-      <h4>7. 鉴权</h4>
+      <h4>7. Xác thực</h4>
       <div class="hint" style="margin:0">
-        除 <code>/healthz</code>、<code>/readyz</code>、<code>/v1/media/*</code> 外，其余接口均需
-        <code>Authorization: Bearer &lt;API Key&gt;</code>。API Key 在服务器
-        <code>/opt/muse2api/.env</code> 的 <code>MUSE2API_KEY</code> 中配置。
+        Ngoại trừ <code>/healthz</code>, <code>/readyz</code> và <code>/v1/media/*</code>, các API khác cần
+        <code>Authorization: Bearer &lt;API Key&gt;</code>. Cấu hình key trong <code>MUSE2API_KEY</code> ở file `.env`.
       </div>
 
-      <h4>8. 接入各类客户端 / 智能体</h4>
+      <h4>8. Kết nối ứng dụng và agent</h4>
       <div class="hint">
-        凡是支持「自定义 OpenAI 兼容端点」的客户端，都只填三个值就能用：
+        Ứng dụng hỗ trợ endpoint tương thích OpenAI chỉ cần ba thông tin sau:
       </div>
       <div class="tblwrap" style="margin-top:8px"><table>
-        <thead><tr><th>配置项</th><th>填什么</th></tr></thead>
+        <thead><tr><th>Thông tin</th><th>Giá trị</th></tr></thead>
         <tbody>
-          <tr><td>Base URL / API 地址</td><td class="mono">http://&lt;你的服务器IP或域名&gt;:18610/v1</td></tr>
-          <tr><td>API Key</td><td class="mono">m2a_...（本页顶部「接入信息」里那个）</td></tr>
-          <tr><td>模型名</td><td class="mono">muse-spark</td></tr>
+          <tr><td>Địa chỉ API</td><td class="mono">http://&lt;IP-hoặc-tên-miền&gt;:18610/v1</td></tr>
+          <tr><td>API key</td><td class="mono">m2a_... (hiển thị ở đầu trang)</td></tr>
+          <tr><td>Model</td><td class="mono">muse-spark</td></tr>
         </tbody>
       </table></div>
 
       <div class="hint" style="margin-top:14px">
-        <b>模型名随便填也能用</b>：常见名字（<code>gpt-4o</code>、<code>gpt-5</code>、
-        <code>claude-sonnet-4</code>、<code>deepseek-chat</code>、<code>gemini-2.5-pro</code> 等）
-        会自动映射到对应能力；完全没见过的名字会原样透传，muse.ai 那边本来就是自动路由，
-        不影响结果。
+        <b>Có thể dùng nhiều tên model</b>: các tên thông dụng (<code>gpt-4o</code>, <code>gpt-5</code>,
+        <code>claude-sonnet-4</code>, <code>deepseek-chat</code>, <code>gemini-2.5-pro</code>)
+        được ánh xạ tự động; muse.ai sẽ chọn khả năng phù hợp.
       </div>
 
-      <h4 style="margin-top:18px">按客户端类型看能不能用</h4>
+      <h4 style="margin-top:18px">Khả năng tương thích</h4>
       <div class="tblwrap"><table>
-        <thead><tr><th>客户端类型</th><th>依赖能力</th><th>状态</th></tr></thead>
+        <thead><tr><th>Loại ứng dụng</th><th>API sử dụng</th><th>Trạng thái</th></tr></thead>
         <tbody>
-          <tr><td>对话 / 聊天类（桌面端、Web UI、浏览器插件）</td><td class="mono">POST /v1/chat/completions</td><td><span class="badge ok">✅ 可用</span></td></tr>
-          <tr><td>流式输出（打字机效果）</td><td class="mono">stream:true（标准 SSE）</td><td><span class="badge ok">✅ 可用</span></td></tr>
-          <tr><td>代码补全 / 内联补全插件</td><td class="mono">POST /v1/chat/completions</td><td><span class="badge ok">✅ 可用</span></td></tr>
-          <tr><td>翻译 / 总结 / 解释类工具</td><td class="mono">POST /v1/chat/completions</td><td><span class="badge ok">✅ 可用</span></td></tr>
-          <tr><td>画图类客户端</td><td class="mono">POST /v1/images/generations</td><td><span class="badge ok">✅ 可用</span></td></tr>
-          <tr><td>视频生成客户端</td><td class="mono">POST /v1/videos（异步轮询）</td><td><span class="badge ok">✅ 可用</span></td></tr>
-          <tr><td>需要「工具调用」的自主 Agent 模式</td><td class="mono">tool_calls / function calling</td><td><span class="badge warn">⚠️ 不可用</span></td></tr>
+          <tr><td>Ứng dụng chat / giao diện web</td><td class="mono">POST /v1/chat/completions</td><td><span class="badge ok">✅ Dùng được</span></td></tr>
+          <tr><td>Phản hồi streaming</td><td class="mono">stream:true (SSE)</td><td><span class="badge ok">✅ Dùng được</span></td></tr>
+          <tr><td>Gợi ý mã</td><td class="mono">POST /v1/chat/completions</td><td><span class="badge ok">✅ Dùng được</span></td></tr>
+          <tr><td>Dịch / tóm tắt / giải thích</td><td class="mono">POST /v1/chat/completions</td><td><span class="badge ok">✅ Dùng được</span></td></tr>
+          <tr><td>Ứng dụng tạo ảnh</td><td class="mono">POST /v1/images/generations</td><td><span class="badge ok">✅ Dùng được</span></td></tr>
+          <tr><td>Ứng dụng tạo video</td><td class="mono">POST /v1/videos (kiểm tra trạng thái)</td><td><span class="badge ok">✅ Dùng được</span></td></tr>
+          <tr><td>Agent cần gọi công cụ</td><td class="mono">tool_calls / function calling</td><td><span class="badge warn">⚠️ Chưa hỗ trợ</span></td></tr>
         </tbody>
       </table></div>
 
       <div class="hint" style="margin-top:8px">
-        <b>关于「工具调用」这条限制（重要，已实测）：</b><br>
-        muse.ai 的网页助手对「输出伪工具调用 JSON」有明确的对齐拒绝策略 —— 实测原话是
-        「我不会按这种 JSON 格式输出'伪工具调用'——我没有 get_weather 这个工具」。
-        用三种不同措辞、不同位置的提示词协议去适配，全部失败。<br>
-        所以：依赖 <code>tool_calls</code> 的<b>自主 Agent 模式</b>（自动读写文件、执行命令那一类）接不了；
-        但所有<b>问答式</b>用法 —— 对话、写代码、解释、翻译、总结、生图、生视频 —— <b>全部完全可用</b>。<br>
-        客户端若强行带上 <code>tools</code> 字段，接口不会报错，会忽略工具声明、按普通对话正常回答。
+        <b>Giới hạn về tool calling:</b> Muse chưa hỗ trợ tạo lời gọi công cụ. Agent cần tự đọc/ghi tệp hoặc chạy lệnh chưa dùng được.
+        Chat, lập trình, dịch, tóm tắt, tạo ảnh và video vẫn hoạt động. Nếu gửi trường <code>tools</code>, API sẽ bỏ qua và xử lý như hội thoại thông thường.
       </div>
     </div>
   </section>
 </main>
 
 <footer style="max-width:1280px;margin:18px auto 32px;padding:12px 24px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line)">
-  <span>上游项目：<a href="https://github.com/czg86389-hub/muse2api" target="_blank" style="color:var(--acc);text-decoration:none">GitHub · muse2api</a></span>
-  <span style="margin:0 10px">·</span>
-  <span>社区认可与友情链接：<a href="https://linux.do/" target="_blank" style="color:var(--acc);text-decoration:none;font-weight:600">LINUX DO 社区 (https://linux.do/)</a></span>
+  <span>Mã nguồn: <a href="https://github.com/bynne2602/muse2api" target="_blank" style="color:var(--acc);text-decoration:none">GitHub · Muse2API Community</a></span>
 </footer>
 
 <div id="toasts"></div>
@@ -768,14 +749,14 @@ function setAuth(ok){
   $('authBanner').classList.toggle('show', !ok);
   $('keyBox').classList.toggle('ok', ok);
   $('keyBox').classList.toggle('miss', !ok);
-  $('keyLbl').textContent = ok ? '✓ 已登录' : 'API Key 必填';
+  $('keyLbl').textContent = ok ? '✓ Đã kết nối' : 'Cần API key';
 }
 
 function saveKey(){
   KEY = $('key').value.trim();
   localStorage.setItem(KEY_STORE, KEY);
-  if (!KEY){ setAuth(false); toast('已清除 API Key', 'warn'); return; }
-  toast('API Key 已保存到本机浏览器，下次打开自动带上', 'ok');
+  if (!KEY){ setAuth(false); toast('Đã xóa API key', 'warn'); return; }
+  toast('Đã lưu API key trên trình duyệt này', 'ok');
   authOK = null;                 // 强制重新判定
   refreshAll();
 }
@@ -798,7 +779,7 @@ async function api(path, opts){
   let data; try { data = JSON.parse(txt); } catch(e){ data = null; }
   if (r.status === 401){
     setAuth(false);
-    throw new Error('API Key 未填写或填写错误');
+    throw new Error('API key chưa được nhập hoặc không đúng');
   }
   setAuth(true);
   if (!r.ok) {
@@ -810,7 +791,7 @@ async function api(path, opts){
     }
     if (!msg && txt) {
       if (txt.includes('502 Bad Gateway') || txt.includes('nginx')) {
-        msg = '反向代理超时 (Nginx 502 Bad Gateway，通常是 Nginx proxy_read_timeout 默认 60s 太短，请将反代超时调至 600s)';
+        msg = 'Proxy đã hết thời gian chờ (Nginx 502). Hãy tăng proxy_read_timeout lên 600 giây.';
       } else {
         msg = txt.slice(0, 150);
       }
@@ -837,16 +818,16 @@ function fmtTime(ts){
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 function ago(ts){
-  if (!ts) return '从未';
+  if (!ts) return 'Chưa dùng';
   const s = Math.max(0, Math.floor(Date.now()/1000) - ts);
-  if (s < 60) return s + ' 秒前';
-  if (s < 3600) return Math.floor(s/60) + ' 分钟前';
-  if (s < 86400) return Math.floor(s/3600) + ' 小时前';
-  return Math.floor(s/86400) + ' 天前';
+  if (s < 60) return s + ' giây trước';
+  if (s < 3600) return Math.floor(s/60) + ' phút trước';
+  if (s < 86400) return Math.floor(s/3600) + ' giờ trước';
+  return Math.floor(s/86400) + ' ngày trước';
 }
 function cp(el){
-  const t = el.parentElement.innerText.replace(/^复制\n?/, '');
-  navigator.clipboard.writeText(t).then(() => toast('已复制', 'ok'));
+  const t = el.parentElement.innerText.replace(/^Sao chép\n?/, '');
+  navigator.clipboard.writeText(t).then(() => toast('Đã sao chép', 'ok'));
 }
 
 /* ================= 页签 ================= */
@@ -881,7 +862,7 @@ async function loadApikey(){
   }catch(e){
     $('inBase').value = location.origin + '/v1';
     fillExtFields(location.origin);
-    $('cmdText').textContent = '（先在右上角填入 API Key，这里会生成完整命令）';
+    $('cmdText').textContent = '(Nhập API key phía trên để tạo lệnh đầy đủ)';
   }
 }
 
@@ -891,26 +872,26 @@ function maskKey(k){
 }
 function renderKey(){
   $('inKey').value = keyShown ? realKey : maskKey(realKey);
-  $('keyEye').textContent = keyShown ? '隐藏' : '显示';
+  $('keyEye').textContent = keyShown ? 'Ẩn' : 'Hiện';
 }
 function toggleKey(){ keyShown = !keyShown; renderKey(); }
 
 function buildCmd(baseUrl){
   const root = (baseUrl || location.origin).replace(/\/v1\/?$/, '').replace(/\/+$/, '');
-  return `python get_muse_cookie.py --base ${root} --key ${realKey || '你的API_KEY'} --label muse-01`;
+  return `python get_muse_cookie.py --base ${root} --key ${realKey || 'API_KEY_CUA_BAN'} --label tai-khoan-chinh`;
 }
 
 async function copyText(v){
-  if (!v) return toast('没有可复制的内容', 'warn');
+  if (!v) return toast('Không có nội dung để sao chép', 'warn');
   try{
     await navigator.clipboard.writeText(v);
-    toast('已复制到剪贴板', 'ok');
+    toast('Đã sao chép', 'ok');
   }catch(e){
     const ta = document.createElement('textarea');   // 非 https 时的兜底
     ta.value = v; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); toast('已复制到剪贴板', 'ok'); }
-    catch(_){ toast('复制失败，请手动选中复制', 'warn'); }
+    try { document.execCommand('copy'); toast('Đã sao chép', 'ok'); }
+    catch(_){ toast('Sao chép thất bại. Hãy chọn và sao chép thủ công.', 'warn'); }
     ta.remove();
   }
 }
@@ -929,20 +910,20 @@ function fillExtFields(baseUrl){
 async function loadExtFiles(){
   const el = $('extFiles');
   if (!el) return;
-  el.textContent = '读取中…';
+  el.textContent = 'Đang tải…';
   try{
     const d = await api('/admin/extension/files');
     const files = d.files || [];
     el.innerHTML = files.length
-      ? `包含 ${files.length} 个文件：` + files.map(f => `<code>${esc(f)}</code>`).join('、')
-      : '（扩展目录为空，请检查部署）';
+      ? `Có ${files.length} tệp: ` + files.map(f => `<code>${esc(f)}</code>`).join(', ')
+      : '(Thư mục tiện ích trống. Hãy kiểm tra cài đặt.)';
   }catch(e){
-    el.textContent = '读取失败：' + e.message;
+    el.textContent = 'Không tải được: ' + e.message;
   }
 }
 
 async function rotateKey(){
-  if (!confirm('重新生成 API Key？\n\n旧 Key 会立即失效，已经接入的下游项目必须同步更新，否则会报 401。')) return;
+  if (!confirm('Tạo API key mới?\n\nKey cũ sẽ hết hiệu lực ngay. Hãy cập nhật key trong các ứng dụng đang kết nối.')) return;
   try{
     const d = await api('/admin/apikey/rotate', {method:'POST'});
     realKey = d.api_key;
@@ -951,62 +932,62 @@ async function rotateKey(){
     $('key').value = KEY;
     keyShown = true; renderKey();
     $('cmdText').textContent = buildCmd($('inBase').value);
-    toast('已生成新 Key 并立即生效，本页已自动更新', 'ok');
-  }catch(e){ toast('生成失败：' + e.message, 'bad'); }
+    toast('Đã tạo và áp dụng API key mới', 'ok');
+  }catch(e){ toast('Không tạo được key: ' + e.message, 'bad'); }
 }
 
 /* ================= 额度显示 ================= */
 function quotaBadge(a){
   const q = a.quota;
   if (!q || !q.found){
-    return '<span class="badge mute" title="还没查过。点「操作」里的「额度」实时查询">未查</span>';
+    return '<span class="badge mute" title="Chọn Hạn mức để kiểm tra">Chưa kiểm tra</span>';
   }
   const pct = (q.weekly_used_pct != null) ? q.weekly_used_pct : null;
   const cls = pct == null ? 'info' : pct < 50 ? 'ok' : pct < 80 ? 'warn' : 'bad';
   const plan = (q.plan || '').replace(/\s*plan\s*$/i, '') || '—';
-  let title = `计划：${q.plan || '?'}`;
-  if (q.weekly_reset) title += `\n周限额重置：${q.weekly_reset}`;
-  if (pct != null) title += `\n周用量：已用 ${pct}%`;
-  if (q.extra_left) title += `\n额外代币：剩 ${q.extra_left}（已用 ${q.extra_used_pct ?? '?'}%）`;
-  if (q.checked_at) title += `\n查询时间：${fmtTime(q.checked_at)}`;
-  const main = pct != null ? `${plan} · 已用 ${pct}%` : plan;
+  let title = `Gói: ${q.plan || '?'}`;
+  if (q.weekly_reset) title += `\nĐặt lại hạn mức tuần: ${q.weekly_reset}`;
+  if (pct != null) title += `\nĐã dùng tuần này: ${pct}%`;
+  if (q.extra_left) title += `\nToken bổ sung: còn ${q.extra_left} (đã dùng ${q.extra_used_pct ?? '?'}%)`;
+  if (q.checked_at) title += `\nKiểm tra lúc: ${fmtTime(q.checked_at)}`;
+  const main = pct != null ? `${plan} · đã dùng ${pct}%` : plan;
   const sub = q.extra_left ? `<div class="mono" style="font-size:11px;color:var(--muted);margin-top:2px">+${esc(q.extra_left)}</div>` : '';
   return `<span class="badge ${cls}" title="${esc(title)}">${esc(main)}</span>${sub}`;
 }
 
 async function queryQuota(aid, btn){
-  if (btn){ btn.disabled = true; btn.textContent = '查询中…'; }
+  if (btn){ btn.disabled = true; btn.textContent = 'Đang kiểm tra…'; }
   try{
     const q = await api(`/admin/accounts/${aid}/quota`, {method:'POST'});
     if (q.found){
-      const extra = q.extra_left ? `，额外剩 ${q.extra_left}` : '';
-      toast(`额度：${q.plan || '?'}，周用量已用 ${q.weekly_used_pct ?? '?'}%${extra}`, 'ok');
+      const extra = q.extra_left ? `, token bổ sung còn ${q.extra_left}` : '';
+      toast(`Hạn mức ${q.plan || '?'}, đã dùng ${q.weekly_used_pct ?? '?'}% tuần này${extra}`, 'ok');
     }else{
-      toast('设置面板里没有读到额度数据（可能是页面结构变了）', 'warn');
+      toast('Không tìm thấy thông tin hạn mức trên trang Muse.', 'warn');
     }
     loadPool();
   }catch(e){
-    toast('额度查询失败：' + e.message, 'bad');
-    if (btn){ btn.disabled = false; btn.textContent = '额度'; }
+    toast('Không kiểm tra được hạn mức: ' + e.message, 'bad');
+    if (btn){ btn.disabled = false; btn.textContent = 'Hạn mức'; }
   }
 }
 
 /* ================= 有效期显示 ================= */
 function expiryBadge(a){
   const ts = a && a.expires_at;
-  if (!ts) return '<span class="badge mute" title="未记录有效期">未知</span>';
+  if (!ts) return '<span class="badge mute" title="Chưa ghi nhận hạn phiên">Chưa rõ</span>';
   const est = a.expires_estimated
-    ? '（按 hatch_vml 约 2 天寿命推算，未取到精确 expires）'
-    : '（hatch_vml 实测到期时间）';
+    ? ' (ước tính theo thời hạn hatch_vml khoảng 2 ngày)'
+    : ' (hạn Cookie hatch_vml đã ghi nhận)';
   const left = ts - Math.floor(Date.now() / 1000);
-  if (left <= 0) return `<span class="badge bad" title="已于 ${fmtTime(ts)} 过期${est}">已过期</span>`;
+  if (left <= 0) return `<span class="badge bad" title="Hết hạn lúc ${fmtTime(ts)}${est}">Đã hết hạn</span>`;
   const days = left / 86400;
   // 保留一位小数，别把「还剩 1.9 天」显示成「剩 1 天」（会让人以为快没了）
   const txt = days >= 1
-    ? `剩 ${days >= 10 ? Math.round(days) : days.toFixed(1)} 天`
-    : `剩 ${Math.max(1, Math.floor(left / 3600))} 小时`;
+    ? `Còn ${days >= 10 ? Math.round(days) : days.toFixed(1)} ngày`
+    : `Còn ${Math.max(1, Math.floor(left / 3600))} giờ`;
   const cls = days < 1 ? 'bad' : days < 3 ? 'warn' : 'ok';
-  return `<span class="badge ${cls}" title="到期时间：${fmtTime(ts)}${est}">${txt}</span>`;
+  return `<span class="badge ${cls}" title="Hết hạn lúc ${fmtTime(ts)}${est}">${txt}</span>`;
 }
 
 /* ================= 账号池 ================= */
@@ -1023,7 +1004,7 @@ async function loadPool(){
     $('sDis').textContent   = st.disabled ?? 0;
     $('poolCount').textContent = accounts.length;
     $('pAcc').className = 'pill ' + (accounts.length ? 'on' : 'off');
-    $('pAcc').innerHTML = `<span class="led"></span>账号 <b>${accounts.length}</b>`;
+    $('pAcc').innerHTML = `<span class="led"></span>Tài khoản <b>${accounts.length}</b>`;
 
     // 快过期 / 已过期提醒。hatch_vml 只有约 2 天寿命，且不会因为使用而延长，
     // 所以这里是刚需提醒，不是锦上添花。
@@ -1033,54 +1014,53 @@ async function loadPool(){
     const bar = $('expWarn');
     if (soon.length){
       const dead = soon.filter(a => a.expires_at <= now).length;
-      const names = soon.slice(0, 4).map(a => esc(a.label)).join('、') +
-                    (soon.length > 4 ? ` 等 ${soon.length} 个` : '');
+      const names = soon.slice(0, 4).map(a => esc(a.label)).join(', ') +
+                    (soon.length > 4 ? ` và ${soon.length} tài khoản khác` : '');
       $('expWarnText').innerHTML = dead
-        ? `⚠️ <b>${dead} 个账号已过期</b>，${soon.length - dead ? `另有 ${soon.length - dead} 个即将过期（${names}）` : names}。` +
-          `过期的账号无法生成，请重新登录一次（约 30 秒）。`
-        : `⏳ <b>${names}</b> 的有效期不足 12 小时。muse.ai 的会话约 2 天到期且不会因使用而延长，` +
-          `建议现在重新登录一次，避免生成时突然失败。`;
+        ? `⚠️ <b>${dead} tài khoản đã hết hạn</b>${soon.length - dead ? `; ${soon.length - dead} tài khoản sắp hết hạn (${names})` : ` (${names})`}. ` +
+          `Hãy đăng nhập lại để tiếp tục sử dụng.`
+        : `⏳ <b>${names}</b> sẽ hết hạn trong vòng 12 giờ. Hãy đăng nhập lại để tránh gián đoạn.`;
       bar.style.display = '';
     }else{
       bar.style.display = 'none';
     }
 
     if (!accounts.length){
-      $('poolBody').innerHTML = '<tr><td colspan="10" class="empty">还没有账号。去「获取 Cookie」页签按三步导入一个</td></tr>';
+      $('poolBody').innerHTML = '<tr><td colspan="10" class="empty">Chưa có tài khoản. Chọn “Thêm tài khoản” để bắt đầu.</td></tr>';
       return;
     }
     $('poolBody').innerHTML = accounts.map(a => {
       const ok = a.ok;
-      const badge = !a.enabled ? '<span class="badge mute">已禁用</span>'
-                  : ok === true  ? '<span class="badge ok">● 可用</span>'
-                  : ok === false ? '<span class="badge bad">● 异常</span>'
-                  : '<span class="badge warn">○ 未检测</span>';
-      const miss = a.essential_ok ? '' : ' <span class="badge bad" title="缺少核心 cookie，无法生成">缺核心</span>';
+      const badge = !a.enabled ? '<span class="badge mute">Đã tắt</span>'
+                  : ok === true  ? '<span class="badge ok">● Sẵn sàng</span>'
+                  : ok === false ? '<span class="badge bad">● Gặp lỗi</span>'
+                  : '<span class="badge warn">○ Chưa kiểm tra</span>';
+      const miss = a.essential_ok ? '' : ' <span class="badge bad" title="Thiếu Cookie cần thiết">Thiếu Cookie</span>';
       return `<tr>
         <td><b>${esc(a.label)}</b></td>
         <td class="mono">${esc(a.id)}</td>
         <td>${badge}${miss}</td>
         <td>${expiryBadge(a)}</td>
         <td>${quotaBadge(a)}</td>
-        <td>${a.enabled ? '<span class="badge ok">开</span>' : '<span class="badge mute">关</span>'}</td>
+        <td>${a.enabled ? '<span class="badge ok">Bật</span>' : '<span class="badge mute">Tắt</span>'}</td>
         <td class="mono">${a.cookie_count}</td>
         <td class="mono" title="${a.last_used ? fmtTime(a.last_used) : ''}">${ago(a.last_used)}</td>
         <td class="mono ellip" title="${esc(a.note||'')}">${esc(a.note || '—')}</td>
         <td><div class="acts">
-          <button class="ghost mini" onclick="testAcc('${a.id}')">测试</button>
-          <button class="ghost mini" onclick="keepaliveOne('${a.id}')" title="静默刷新会话令牌与有效期">保活</button>
-          <button class="ghost mini" onclick="queryQuota('${a.id}', this)">额度</button>
-          <button class="ghost mini" onclick="toggleAcc('${a.id}', ${!a.enabled})">${a.enabled ? '禁用' : '启用'}</button>
-          <button class="ghost mini" onclick="renameAcc('${a.id}','${esc(a.label)}')">改名</button>
-          <button class="ghost mini" onclick="updateCookies('${a.id}')">更新Cookie</button>
-          <button class="danger mini" onclick="delAcc('${a.id}','${esc(a.label)}')">删除</button>
+          <button class="ghost mini" onclick="testAcc('${a.id}')">Kiểm tra</button>
+          <button class="ghost mini" onclick="keepaliveOne('${a.id}')" title="Làm mới phiên đăng nhập">Làm mới</button>
+          <button class="ghost mini" onclick="queryQuota('${a.id}', this)">Hạn mức</button>
+          <button class="ghost mini" onclick="toggleAcc('${a.id}', ${!a.enabled})">${a.enabled ? 'Tắt' : 'Bật'}</button>
+          <button class="ghost mini" onclick="renameAcc('${a.id}','${esc(a.label)}')">Đổi tên</button>
+          <button class="ghost mini" onclick="updateCookies('${a.id}')">Cập nhật Cookie</button>
+          <button class="danger mini" onclick="delAcc('${a.id}','${esc(a.label)}')">Xóa</button>
         </div></td>
       </tr>`;
     }).join('');
   }catch(e){
     $('poolBody').innerHTML = authOK === false
-      ? '<tr><td colspan="10" class="empty">🔑 请先在右上角填入 API Key 并点「保存」</td></tr>'
-      : `<tr><td colspan="10" class="empty">加载失败：${esc(e.message)}</td></tr>`;
+      ? '<tr><td colspan="10" class="empty">🔑 Nhập API key ở phía trên rồi chọn “Lưu”.</td></tr>'
+      : `<tr><td colspan="10" class="empty">Không tải được: ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -1089,85 +1069,85 @@ async function addAccount(fromManual){
   const ckEl    = $(fromManual ? 'mCookie' : 'newCookie');
   const label = labelEl.value.trim();
   const raw = ckEl.value.trim();
-  if (!raw) return toast('请先粘贴 Cookie', 'warn');
+  if (!raw) return toast('Hãy dán Cookie trước.', 'warn');
   const lines = raw.split('\n').map(s => s.trim()).filter(Boolean);
   const body = (lines.length > 1) ? {batch: raw} : {label: label, cookie_header: raw};
   try{
     const r = await api('/admin/accounts', {method:'POST', body: JSON.stringify(body)});
     if (r.warning) toast(r.warning, 'warn');
-    else toast(`成功导入 ${r.count} 个账号`, 'ok');
+    else toast(`Đã thêm ${r.count} tài khoản`, 'ok');
     ckEl.value = ''; labelEl.value = '';
     loadPool();
-  }catch(e){ toast('导入失败：' + e.message, 'bad'); }
+  }catch(e){ toast('Không nhập được tài khoản: ' + e.message, 'bad'); }
 }
 
 async function testAcc(id){
-  toast('正在真实打开 muse.ai 校验会话…');
+  toast('Đang kiểm tra phiên đăng nhập trên muse.ai…');
   try{
     const r = await api(`/admin/accounts/${id}/test`, {method:'POST'});
     toast((r.ok ? '✓ ' : '✗ ') + r.message, r.ok ? 'ok' : 'bad');
     loadPool();
-  }catch(e){ toast('测试失败：' + e.message, 'bad'); }
+  }catch(e){ toast('Kiểm tra thất bại: ' + e.message, 'bad'); }
 }
 
 async function keepaliveOne(id){
-  toast('正在为该账号执行会话静默续期…');
+  toast('Đang làm mới phiên đăng nhập…');
   try{
     const r = await api(`/admin/accounts/${id}/keepalive`, {method:'POST'});
-    toast(r.ok ? `✓ 账号保活成功，新到期时间已更新` : `✗ 保活失败: ${r.error||'未知错误'}`, r.ok ? 'ok' : 'bad');
+    toast(r.ok ? '✓ Đã làm mới phiên đăng nhập' : `✗ Làm mới thất bại: ${r.error||'Lỗi không xác định'}`, r.ok ? 'ok' : 'bad');
     loadPool();
-  }catch(e){ toast('保活失败：' + e.message, 'bad'); }
+  }catch(e){ toast('Làm mới thất bại: ' + e.message, 'bad'); }
 }
 
 async function keepaliveAll(){
   const btn = $('btnKeepaliveAll');
-  if (btn) { btn.disabled = true; btn.innerText = '保活执行中…'; }
-  toast('正在唤醒无头浏览器，为账号池执行静默续期与保活…', 'warn');
+  if (btn) { btn.disabled = true; btn.innerText = 'Đang làm mới…'; }
+  toast('Đang làm mới phiên cho các tài khoản…', 'warn');
   try{
     const r = await api('/admin/accounts/keepalive?force=true', {method:'POST'});
     if (r.status === 'busy') {
-      toast('保活任务正在后台运行中，请稍候查看', 'warn');
+      toast('Tác vụ đang chạy. Hãy kiểm tra lại sau.', 'warn');
     } else {
-      toast(`✓ 成功保活 ${r.refreshed_count || 0} 个账号，跳过 ${r.skipped_count || 0} 个`, 'ok');
+      toast(`✓ Đã làm mới ${r.refreshed_count || 0} tài khoản; bỏ qua ${r.skipped_count || 0}`, 'ok');
     }
     loadPool();
-  }catch(e){ toast('保活执行失败：' + e.message, 'bad'); }
+  }catch(e){ toast('Không làm mới được phiên: ' + e.message, 'bad'); }
   finally{
-    if (btn) { btn.disabled = false; btn.innerText = '⚡ 一键保活所有账号'; }
+    if (btn) { btn.disabled = false; btn.innerText = 'Làm mới tất cả'; }
   }
 }
 
 async function toggleAcc(id, enabled){
   try{
     await api(`/admin/accounts/${id}`, {method:'PATCH', body: JSON.stringify({enabled})});
-    toast(enabled ? '已启用' : '已禁用', 'ok'); loadPool();
-  }catch(e){ toast('操作失败：' + e.message, 'bad'); }
+    toast(enabled ? 'Đã bật tài khoản' : 'Đã tắt tài khoản', 'ok'); loadPool();
+  }catch(e){ toast('Thao tác thất bại: ' + e.message, 'bad'); }
 }
 
 async function renameAcc(id, old){
-  const label = prompt('新的账号标签：', old);
+  const label = prompt('Nhập tên mới cho tài khoản:', old);
   if (label === null || !label.trim()) return;
   try{
     await api(`/admin/accounts/${id}`, {method:'PATCH', body: JSON.stringify({label: label.trim()})});
-    toast('标签已更新', 'ok'); loadPool();
-  }catch(e){ toast('改名失败：' + e.message, 'bad'); }
+    toast('Đã đổi tên tài khoản', 'ok'); loadPool();
+  }catch(e){ toast('Đổi tên thất bại: ' + e.message, 'bad'); }
 }
 
 async function updateCookies(id){
-  const v = prompt('粘贴该账号最新的 Cookie 字符串：');
+  const v = prompt('Dán Cookie mới của tài khoản:');
   if (!v || !v.trim()) return;
   try{
     const r = await api(`/admin/accounts/${id}/cookies`, {method:'POST', body: JSON.stringify({cookie_header: v.trim()})});
-    toast(`Cookie 已更新（${r.cookie_count} 条）`, 'ok'); loadPool();
-  }catch(e){ toast('更新失败：' + e.message, 'bad'); }
+    toast(`Đã cập nhật ${r.cookie_count} Cookie`, 'ok'); loadPool();
+  }catch(e){ toast('Cập nhật thất bại: ' + e.message, 'bad'); }
 }
 
 async function delAcc(id, label){
-  if (!confirm(`确定删除账号「${label}」？此操作不可撤销。`)) return;
+  if (!confirm(`Xóa tài khoản “${label}”? Thao tác này không thể hoàn tác.`)) return;
   try{
     await api(`/admin/accounts/${id}`, {method:'DELETE'});
-    toast('已删除', 'ok'); loadPool();
-  }catch(e){ toast('删除失败：' + e.message, 'bad'); }
+    toast('Đã xóa tài khoản', 'ok'); loadPool();
+  }catch(e){ toast('Xóa thất bại: ' + e.message, 'bad'); }
 }
 
 /* ================= 任务记录 ================= */
@@ -1176,38 +1156,38 @@ async function loadTasks(){
     const d = await api('/admin/tasks?limit=60');
     const ts = d.tasks || [];
     $('taskCount').textContent = ts.length;
-    if (!ts.length){ $('taskBody').innerHTML = '<tr><td colspan="8" class="empty">暂无任务记录</td></tr>'; return; }
+    if (!ts.length){ $('taskBody').innerHTML = '<tr><td colspan="8" class="empty">Chưa có tác vụ.</td></tr>'; return; }
     $('taskBody').innerHTML = ts.map(t => {
       const cls = (t.status === 'succeeded' || t.status === 'completed') ? 'ok' : t.status === 'failed' ? 'bad'
                 : t.status === 'processing' ? 'info' : 'warn';
       let out = '—';
-      if (t.result && t.result.url) out = `<a href="${esc(t.result.url)}" target="_blank">查看结果</a> <span class="mono">${fmtBytes(t.result.bytes)}</span>`;
+      if (t.result && t.result.url) out = `<a href="${esc(t.result.url)}" target="_blank">Mở kết quả</a> <span class="mono">${fmtBytes(t.result.bytes)}</span>`;
       else if (t.error) out = `<span style="color:var(--bad)">${esc(t.error).slice(0,120)}</span>`;
       return `<tr>
         <td class="mono">${esc(t.id)}</td>
-        <td>${t.kind === 'video' ? '<span class="badge info">视频</span>' : '<span class="badge info">图片</span>'}</td>
+        <td>${t.kind === 'video' ? '<span class="badge info">Video</span>' : '<span class="badge info">Ảnh</span>'}</td>
         <td><span class="ellip" title="${esc(t.prompt)}">${esc(t.prompt)}</span></td>
         <td><span class="badge ${cls}">${esc(t.status)}</span></td>
         <td class="mono">${t.elapsed ? t.elapsed + 's' : '—'}</td>
         <td class="mono">${fmtTime(t.created_at)}</td>
         <td>${out}</td>
-        <td><button class="danger mini" onclick="delTask('${t.id}')">删</button></td>
+        <td><button class="danger mini" onclick="delTask('${t.id}')">Xóa</button></td>
       </tr>`;
     }).join('');
   }catch(e){
-    $('taskBody').innerHTML = `<tr><td colspan="8" class="empty">加载失败：${esc(e.message)}</td></tr>`;
+    $('taskBody').innerHTML = `<tr><td colspan="8" class="empty">Không tải được: ${esc(e.message)}</td></tr>`;
   }
 }
 async function delTask(id){
   try{ await api('/admin/tasks/' + id, {method:'DELETE'}); loadTasks(); }
-  catch(e){ toast('删除失败：' + e.message, 'bad'); }
+  catch(e){ toast('Xóa thất bại: ' + e.message, 'bad'); }
 }
 async function clearTasks(){
-  if (!confirm('确定清空全部任务记录？（已生成的媒体文件不会被删除）')) return;
+  if (!confirm('Xóa toàn bộ lịch sử tác vụ? Các tệp đã tạo sẽ được giữ lại.')) return;
   try{
     const r = await api('/admin/tasks/clear', {method:'POST', body: JSON.stringify({keep: 0})});
-    toast(`已清空 ${r.removed} 条记录`, 'ok'); loadTasks();
-  }catch(e){ toast('清空失败：' + e.message, 'bad'); }
+    toast(`Đã xóa ${r.removed} tác vụ`, 'ok'); loadTasks();
+  }catch(e){ toast('Không xóa được lịch sử: ' + e.message, 'bad'); }
 }
 
 /* ================= 媒体库 ================= */
@@ -1226,7 +1206,7 @@ function updateMediaSelectionUI(){
     btnDel.style.display = count > 0 ? 'inline-flex' : 'none';
   }
   if (btnSelAll) {
-    btnSelAll.textContent = (total > 0 && count === total) ? '取消全选' : '全选';
+    btnSelAll.textContent = (total > 0 && count === total) ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
   }
 
   document.querySelectorAll('.tile[data-name]').forEach(el => {
@@ -1259,44 +1239,44 @@ function toggleSelectAllMedia(){
 }
 
 async function delSingleMedia(name){
-  if (!confirm(`确定要删除媒体文件「${name}」？此操作无法撤销。`)) return;
+  if (!confirm(`Xóa tệp “${name}”? Thao tác này không thể hoàn tác.`)) return;
   try{
     const r = await api('/admin/media/delete', {
       method: 'POST',
       body: JSON.stringify({ names: [name] })
     });
     if (r.removed > 0) {
-      toast('删除成功', 'ok');
+      toast('Đã xóa tệp', 'ok');
       _selectedMedia.delete(name);
       loadMedia();
     } else {
-      toast('文件不存在或已被删除', 'warn');
+      toast('Tệp không tồn tại hoặc đã bị xóa', 'warn');
       loadMedia();
     }
   }catch(e){
-    toast('删除失败：' + e.message, 'bad');
+    toast('Xóa thất bại: ' + e.message, 'bad');
   }
 }
 
 async function delSelectedMedia(){
   const count = _selectedMedia.size;
-  if (!count) return toast('请先选择要删除的媒体文件', 'warn');
-  if (!confirm(`确定要永久删除选中的 ${count} 个媒体文件？此操作无法撤销。`)) return;
+  if (!count) return toast('Hãy chọn tệp cần xóa trước.', 'warn');
+  if (!confirm(`Xóa vĩnh viễn ${count} tệp đã chọn? Thao tác này không thể hoàn tác.`)) return;
 
   const names = Array.from(_selectedMedia);
   const btn = $('btnDelSelectedMedia');
-  if (btn) { btn.disabled = true; btn.textContent = '删除中…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Đang xóa…'; }
 
   try{
     const r = await api('/admin/media/delete', {
       method: 'POST',
       body: JSON.stringify({ names })
     });
-    toast(`已成功删除 ${r.removed || 0} 个文件`, 'ok');
+    toast(`Đã xóa ${r.removed || 0} tệp`, 'ok');
     _selectedMedia.clear();
     loadMedia();
   }catch(e){
-    toast('批量删除失败：' + e.message, 'bad');
+    toast('Không xóa được các tệp đã chọn: ' + e.message, 'bad');
   }finally{
     if (btn) btn.disabled = false;
   }
@@ -1314,7 +1294,7 @@ async function loadMedia(){
     $('mediaCount').textContent = ms.length;
     $('sMedia').textContent = ms.length;
     if (!ms.length){
-      $('mediaGrid').innerHTML = '<div class="empty">还没有生成任何媒体文件</div>';
+      $('mediaGrid').innerHTML = '<div class="empty">Chưa có tệp nào được tạo.</div>';
       updateMediaSelectionUI();
       return;
     }
@@ -1322,7 +1302,7 @@ async function loadMedia(){
       const isSel = _selectedMedia.has(m.name);
       return `
       <div class="tile ${isSel ? 'selected' : ''}" data-name="${esc(m.name)}">
-        <label class="check-tag" title="勾选以批量操作" onclick="event.stopPropagation()">
+        <label class="check-tag" title="Chọn để thao tác hàng loạt" onclick="event.stopPropagation()">
           <input type="checkbox" class="tile-check" ${isSel ? 'checked' : ''} onchange="toggleMediaSelect('${esc(m.name)}')">
         </label>
         <div class="thumb">${m.kind === 'video'
@@ -1332,25 +1312,25 @@ async function loadMedia(){
           <div class="nm" title="${esc(m.name)}">${esc(m.name)}</div>
           <div style="margin-top:3px">${fmtBytes(m.bytes)} · ${fmtTime(m.mtime)}</div>
           <div class="ac">
-            <a class="badge info" href="${esc(m.url)}" target="_blank">打开</a>
-            <a class="badge mute" href="${esc(m.url)}" download>下载</a>
-            <a class="badge bad" href="javascript:void(0)" onclick="delSingleMedia('${esc(m.name)}')">删除</a>
+            <a class="badge info" href="${esc(m.url)}" target="_blank">Mở</a>
+            <a class="badge mute" href="${esc(m.url)}" download>Tải xuống</a>
+            <a class="badge bad" href="javascript:void(0)" onclick="delSingleMedia('${esc(m.name)}')">Xóa</a>
           </div>
         </div>
       </div>`;
     }).join('');
     updateMediaSelectionUI();
-  }catch(e){ $('mediaGrid').innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`; }
+  }catch(e){ $('mediaGrid').innerHTML = `<div class="empty">Không tải được: ${esc(e.message)}</div>`; }
 }
 
 /* ================= 在线测试 ================= */
 async function runImage(){
   const btn = $('imgBtn'), box = $('imgRes');
   const prompt = $('imgPrompt').value.trim();
-  if (!prompt) return toast('请输入提示词', 'warn');
-  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>生成中…';
+  if (!prompt) return toast('Nhập mô tả trước.', 'warn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Đang tạo…';
   box.className = 'result show';
-  box.innerHTML = '<span class="spin"></span>正在提交图片任务，生成期间会持续查询状态…';
+  box.innerHTML = '<span class="spin"></span>Đang gửi yêu cầu tạo ảnh và cập nhật tiến độ…';
   const t0 = Date.now();
   try{
     let r = await api('/v1/images/tasks', {method:'POST',
@@ -1359,35 +1339,35 @@ async function runImage(){
     const deadline = Date.now() + 15 * 60 * 1000;
     let failures = 0;
     while (r.status !== 'completed') {
-      if (Date.now() >= deadline) throw new Error('等待超过 15 分钟，请在任务记录查看结果，勿重复提交');
-      if (r.status === 'failed') throw new Error(r.error || '图片生成失败');
-      box.textContent = `任务 ${taskId} · ${r.status} · 已等待 ${Math.floor((Date.now()-t0)/1000)} 秒`;
+      if (Date.now() >= deadline) throw new Error('Đã chờ hơn 15 phút. Hãy xem kết quả trong Tác vụ; không gửi lại yêu cầu.');
+      if (r.status === 'failed') throw new Error(r.error || 'Tạo ảnh thất bại');
+      box.textContent = `Tác vụ ${taskId} · ${r.status} · đã chờ ${Math.floor((Date.now()-t0)/1000)} giây`;
       await new Promise(resolve => setTimeout(resolve, 3000));
       try {
         r = await api('/v1/images/tasks/' + encodeURIComponent(taskId));
         failures = 0;
       } catch (e) {
-        if (++failures >= 6) throw new Error('状态查询暂时失败，请在任务记录查看，勿重复提交');
+        if (++failures >= 6) throw new Error('Chưa kiểm tra được trạng thái. Hãy xem trong Tác vụ; không gửi lại yêu cầu.');
       }
     }
     const it = r.data[0];
-    box.innerHTML = `<b style="color:var(--ok)">✓ 生成成功</b>
+    box.innerHTML = `<b style="color:var(--ok)">✓ Tạo thành công</b>
       <span class="mono" style="color:var(--muted);margin-left:10px">${((Date.now()-t0)/1000).toFixed(1)}s · ${fmtBytes(it.bytes)}</span>
       <img src="${esc(it.url)}" alt="">
       <pre class="out">${esc(JSON.stringify(r, null, 2))}</pre>`;
     loadMedia();
   }catch(e){
-    box.innerHTML = `<b style="color:var(--bad)">✗ 生成失败</b><pre class="out">${esc(e.message)}</pre>`;
-  }finally{ btn.disabled = false; btn.textContent = '开始生成图片'; }
+    box.innerHTML = `<b style="color:var(--bad)">✗ Tạo thất bại</b><pre class="out">${esc(e.message)}</pre>`;
+  }finally{ btn.disabled = false; btn.textContent = 'Tạo ảnh'; }
 }
 
 async function runVideo(){
   const btn = $('vidBtn'), box = $('vidRes');
   const prompt = $('vidPrompt').value.trim();
-  if (!prompt) return toast('请输入提示词', 'warn');
-  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>生成中…';
+  if (!prompt) return toast('Nhập mô tả trước.', 'warn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Đang tạo…';
   box.className = 'result show';
-  box.innerHTML = '<span class="spin"></span>正在创建视频任务…';
+  box.innerHTML = '<span class="spin"></span>Đang tạo tác vụ video…';
   const t0 = Date.now();
   try{
     const t = await api('/v1/videos', {method:'POST', body: JSON.stringify({
@@ -1398,24 +1378,24 @@ async function runVideo(){
       if (s.status === 'succeeded' || s.status === 'completed'){
         const vurl = (s.result && s.result.url) || s.url || '';
         const vbytes = (s.result && s.result.bytes) || 0;
-        box.innerHTML = `<b style="color:var(--ok)">✓ 生成成功</b>
+        box.innerHTML = `<b style="color:var(--ok)">✓ Tạo thành công</b>
           <span class="mono" style="color:var(--muted);margin-left:10px">${el}s · ${fmtBytes(vbytes)}</span>
           <video src="${esc(vurl)}" controls playsinline></video>
           <pre class="out">${esc(JSON.stringify(s, null, 2))}</pre>`;
-        btn.disabled = false; btn.textContent = '开始生成视频';
+        btn.disabled = false; btn.textContent = 'Tạo video';
         loadMedia(); loadTasks();
       }else if (s.status === 'failed'){
-        box.innerHTML = `<b style="color:var(--bad)">✗ 生成失败</b><pre class="out">${esc(s.error||'')}</pre>`;
-        btn.disabled = false; btn.textContent = '开始生成视频';
+        box.innerHTML = `<b style="color:var(--bad)">✗ Tạo thất bại</b><pre class="out">${esc(s.error||'')}</pre>`;
+        btn.disabled = false; btn.textContent = 'Tạo video';
       }else{
-        box.innerHTML = `<span class="spin"></span>任务 ${esc(s.status)} · 已等待 ${el}s（视频通常 60–120 秒）…`;
+        box.innerHTML = `<span class="spin"></span>Tác vụ ${esc(s.status)} · đã chờ ${el}s (video thường mất 60–120 giây)…`;
         setTimeout(tick, 4000);
       }
     };
     tick();
   }catch(e){
-    box.innerHTML = `<b style="color:var(--bad)">✗ 创建任务失败</b><pre class="out">${esc(e.message)}</pre>`;
-    btn.disabled = false; btn.textContent = '开始生成视频';
+    box.innerHTML = `<b style="color:var(--bad)">✗ Không tạo được tác vụ</b><pre class="out">${esc(e.message)}</pre>`;
+    btn.disabled = false; btn.textContent = 'Tạo video';
   }
 }
 
@@ -1564,15 +1544,15 @@ async function loadStatus(){
   try{
     const d = await api('/admin/status');
     $('pSvc').className = 'pill on';
-    $('pSvc').innerHTML = '<span class="led"></span>服务 <b>正常</b>';
+    $('pSvc').innerHTML = '<span class="led"></span>Dịch vụ <b>Đang chạy</b>';
     $('pBr').className = 'pill ' + (d.browser_running ? 'on' : 'off');
-    $('pBr').innerHTML = `<span class="led"></span>浏览器 <b>${d.browser_running ? '运行中' : '空闲'}</b>`;
+    $('pBr').innerHTML = `<span class="led"></span>Trình duyệt <b>${d.browser_running ? 'Đang chạy' : 'Đang chờ'}</b>`;
     $('sMedia').textContent = d.media_count ?? 0;
     if (d.base_url){ $('dBase').textContent = d.base_url; $('inBase').value = d.base_url; }
   }catch(e){
     if (authOK === false){
       $('pSvc').className = 'pill';
-      $('pSvc').innerHTML = '<span class="led"></span>服务 <b>待登录</b>';
+      $('pSvc').innerHTML = '<span class="led"></span>Dịch vụ <b>Chờ API key</b>';
     } else {
       $('pSvc').className = 'pill off';
       $('pSvc').innerHTML = '<span class="led"></span>服务 <b>' + esc(e.message).slice(0,28) + '</b>';
@@ -1580,16 +1560,13 @@ async function loadStatus(){
   }
 }
 
-function refreshAll(){ loadStatus(); loadPool(); loadApikey(); loadRepoStatus(false); }
+function refreshAll(){ loadStatus(); loadPool(); loadApikey(); }
 
 refreshAll();
 setInterval(() => {
   loadStatus(); loadPool();
   if ($('tab-tasks').classList.contains('active')) loadTasks();
 }, 8000);
-setInterval(() => {
-  loadRepoStatus(false);
-}, 60000);
 </script>
 </body>
 </html>
