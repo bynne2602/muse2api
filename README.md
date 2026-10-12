@@ -1,5 +1,7 @@
 # Muse2API Community
 
+[English](README.md) | [Tiếng Việt](README.vi.md)
+
 Self-hosted, OpenAI-compatible API bridge for the Muse web app. This community fork keeps the upstream license and credits while focusing on a straightforward self-hosted setup.
 
 > This project is an unofficial third-party integration. It is not affiliated with or endorsed by Muse. Use it only with accounts and access you are authorized to use, and follow the service's terms.
