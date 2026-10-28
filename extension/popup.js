@@ -2,7 +2,8 @@
 
 const $ = (id) => document.getElementById(id);
 const STORE = 'muse2api_ext_cfg';
-const ESSENTIAL = ['hatch_sess', 'hatch_gw', 'hatch_vml', 'hatch_native_auth_device'];
+// muse.ai stopped issuing hatch_gw / hatch_vml in late Oct 2026.
+const ESSENTIAL = ['hatch_sess', 'hatch_native_auth_device'];
 
 function log(message, cls) {
   const el = $('log');
@@ -15,7 +16,8 @@ function normBase(value) {
   let s = (value || '').trim();
   if (!s) return '';
   if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
-  return s.replace(/\/+$/, '').replace(/\/v1$/i, '');
+  // The admin page URL is a common paste; the API lives at the root.
+  return s.replace(/\/+$/, '').replace(/\/(v1|admin)$/i, '');
 }
 
 async function loadCfg() {

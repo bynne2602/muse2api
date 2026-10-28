@@ -11,8 +11,9 @@ import uuid
 _LOCK = threading.Lock()
 
 # 决定账号生死的核心 cookie（与 engine.ESSENTIAL_COOKIES 保持一致）
-ESSENTIAL_COOKIES = ("hatch_sess", "hatch_gw", "hatch_vml",
-                     "hatch_native_auth_device")
+# muse.ai stopped issuing hatch_gw / hatch_vml in late Oct 2026; the session now rides on
+# hatch_sess, hatch_native_auth_device and a host-only __Host-hatch_* cookie.
+ESSENTIAL_COOKIES = ("hatch_sess", "hatch_native_auth_device")
 
 
 def _is_pos(v) -> bool:
