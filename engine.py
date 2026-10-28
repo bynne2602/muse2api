@@ -28,8 +28,9 @@ log = logging.getLogger("muse2api")
 ATT_SEL = '[data-testid^="hatch-chat-attachment-presentation-"]'
 
 # 决定账号生死的核心 cookie（缺失或过期 = 会话失效）
-ESSENTIAL_COOKIES = ("hatch_sess", "hatch_gw", "hatch_vml",
-                     "hatch_native_auth_device")
+# muse.ai stopped issuing hatch_gw / hatch_vml in late Oct 2026; the session now rides on
+# hatch_sess, hatch_native_auth_device and a host-only __Host-hatch_* cookie.
+ESSENTIAL_COOKIES = ("hatch_sess", "hatch_native_auth_device")
 
 
 class MuseAuthError(RuntimeError):
@@ -307,11 +308,14 @@ class MuseEngine:
                 exp_val = float(exp) if exp and float(exp) > now + 3600 else (now + 7 * 86400)
             except (TypeError, ValueError):
                 exp_val = now + 7 * 86400
-            for dom in (".muse.ai", "muse.ai"):
+            # A __Host- cookie must be host-only: Chromium rejects it when a domain is given.
+            targets = ([{"url": "https://muse.ai/"}] if name.startswith("__Host-")
+                       else [{"domain": dom} for dom in (".muse.ai", "muse.ai")])
+            for target in targets:
                 params = {
                     "name": name,
                     "value": value,
-                    "domain": dom,
+                    **target,
                     "path": "/",
                     "secure": True,
                     "expires": exp_val,

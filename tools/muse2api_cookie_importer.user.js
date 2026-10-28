@@ -20,7 +20,8 @@
   'use strict';
 
   const STORE_KEY = '***';
-  const ESSENTIAL = ['hatch_sess', 'hatch_gw', 'hatch_vml'];
+  // muse.ai stopped issuing hatch_gw / hatch_vml in late Oct 2026.
+  const ESSENTIAL = ['hatch_sess', 'hatch_native_auth_device'];
 
   function loadCfg() {
     const fallback = { base: '', key: '', label: '' };

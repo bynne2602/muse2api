@@ -464,7 +464,7 @@
         </div>
         <div style="flex:3">
           <label>Cookie đăng nhập</label>
-          <textarea id="mCookie" rows="3" placeholder="hatch_sess=...; hatch_gw=...; hatch_vml=...; hatch_native_auth_device=..."></textarea>
+          <textarea id="mCookie" rows="3" placeholder="hatch_sess=...; hatch_native_auth_device=...; __Host-hatch_...=..."></textarea>
         </div>
       </div>
       <div style="margin-top:12px">
@@ -501,13 +501,12 @@
         <thead><tr><th>Cookie</th><th>httpOnly</th><th>Thời hạn</th><th>Vai trò</th></tr></thead>
         <tbody>
           <tr><td class="mono">hatch_sess</td><td>Có</td><td><b style="color:var(--ok)">Khoảng 30 ngày</b></td><td>Phiên đăng nhập chính</td></tr>
-          <tr><td class="mono">hatch_gw</td><td>Có</td><td><b style="color:var(--ok)">Khoảng 1 năm</b></td><td>Token gateway</td></tr>
-          <tr><td class="mono">hatch_vml</td><td>Có</td><td><b style="color:var(--bad)">Khoảng 2 ngày</b></td><td>Token ngắn hạn, quyết định thời hạn phiên</td></tr>
+          <tr><td class="mono">__Host-hatch_…</td><td>Có</td><td>—</td><td>Token phiên (thay cho hatch_gw / hatch_vml từ 10/2026)</td></tr>
           <tr><td class="mono">hatch_native_auth_device</td><td>Có</td><td><b style="color:var(--ok)">Khoảng 30 ngày</b></td><td>Mã thiết bị</td></tr>
         </tbody>
       </table></div>
       <div class="hint" style="margin:12px 0 0;line-height:1.85">
-        Thời hạn phiên thường phụ thuộc vào <code>hatch_vml</code> (khoảng 2 ngày) và không tự kéo dài khi sử dụng.
+        Từ cuối tháng 10/2026 muse.ai không còn cấp <code>hatch_gw</code> / <code>hatch_vml</code>; hãy sao chép toàn bộ Cookie, kể cả <code>__Host-hatch_…</code>.
         Khi phiên hết hạn hoặc tài khoản báo lỗi, hãy đăng nhập lại và nhập Cookie mới.
       </div>
     </div>
